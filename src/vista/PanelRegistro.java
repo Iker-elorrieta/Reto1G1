@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import com.toedter.calendar.JDateChooser;
 
 public class PanelRegistro extends JPanel {
 	
@@ -113,11 +114,10 @@ public class PanelRegistro extends JPanel {
 		lblFecNac.setBounds(38, 275, 294, 14);
 		add(lblFecNac);
 		
-		txtFecNac = new JTextField();
-		txtFecNac.setFont(new Font("Raleway", Font.PLAIN, 15));
-		txtFecNac.setBounds(38, 295, 294, 30);
-		add(txtFecNac);
-		txtFecNac.setColumns(10);
+		JDateChooser dateChooser = new JDateChooser();
+		dateChooser.setBounds(38, 295, 294, 30);
+		dateChooser.setFont(new Font("Raleway", Font.PLAIN, 15));
+		add(dateChooser);
 		
 		// Botón Registrar
 		btnRegistrar = new JButton("Registrar");
