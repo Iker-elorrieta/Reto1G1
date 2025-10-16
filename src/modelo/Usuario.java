@@ -8,12 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
 
 import conexion.Conexion;
 
@@ -29,6 +26,7 @@ public class Usuario {
 	private Date fec_nac;
 	private int nivel;
 	private String tipo;
+	private List<UsuWorkout> workouts = new ArrayList<>();
 	
 	private static String collectionName = "usuarios";
 	private static String fieldNombre = "nombre";
@@ -152,49 +150,7 @@ public class Usuario {
 
 		return this;
 	}
-	
-	public ArrayList<Usuario> mObtenerUsuario() {
-		Firestore conexion = null;
 
-		ArrayList<Usuario> listaDeUsarios = new ArrayList<Usuario>();
-
-		try {
-			conexion = Conexion.conectar();
-
-			ApiFuture<QuerySnapshot> query = conexion.collection(collectionName).get();
-
-			QuerySnapshot querySnapshot = query.get();
-			List<QueryDocumentSnapshot> usuarios = querySnapshot.getDocuments();
-			for (QueryDocumentSnapshot usuario : usuarios) {
-
-				Usuario usu = new Usuario();
-				usu.setIdUsuario(usuario.getId());				
-				usu.setNombre(usuario.getString(fieldNombre));
-				usu.setApellidos(usuario.getString(fieldApellidos));
-				usu.setEmail(usuario.getString(fieldEmail));
-				usu.setContrasena(usuario.getString(fieldContrasena));
-				usu.setFec_nac(usuario.getDate(fieldFecNac));
-				usu.setNivel(usuario.getLong(fieldNivel).intValue());
-				usu.setTipo(usuario.getString(fieldTipo));
-				
-				
-				listaDeUsarios.add(usu);
-			}
-			conexion.close();
-
-		} catch (InterruptedException | ExecutionException e) {
-			System.out.println("Error: Clase Usuario, metodo mObtenerUsuario con arrayList");
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return listaDeUsarios;
-	}	
 	
 	
 	// ********** CREATE **********
@@ -259,24 +215,6 @@ public class Usuario {
 	}
 	
 
-	// ********** DELETE **********
-	public boolean mEliminarUsuario() {
-	    Firestore conexion = null;
-
-	    try {
-	        conexion = Conexion.conectar();
-	        DocumentReference usuarioRef = conexion.collection(collectionName).document(IdUsuario);
-	        usuarioRef.delete();
-	        conexion.close();
-	        return true;
-
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-
-	    return false;
-	}
+	
 	
 }

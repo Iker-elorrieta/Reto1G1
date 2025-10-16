@@ -2,13 +2,10 @@ package modelo;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -24,6 +21,7 @@ public class Workout {
 	private String descripcion;
 	private int nivel;
 	private String video;
+	private List<Ejercicio> ejercicios = new ArrayList<>();
 	
 	private static String collectionName = "workouts";
 	private static String fieldNombre = "nombre";
@@ -154,80 +152,7 @@ public class Workout {
 		return listaDeWorkouts;
 	}	
 	
-	// ********** CREATE **********
-		public boolean mAnadirWorkout() {
-			Firestore conexion = null;
 
-			try {
-				conexion = Conexion.conectar();
-				Map<String, Object> nuevoWorkout = new HashMap<>();
-				nuevoWorkout.put(fieldNombre, nombre);
-				nuevoWorkout.put(fieldDescripcion, descripcion);
-				nuevoWorkout.put(fieldNivel, nivel);
-				nuevoWorkout.put(fieldVideo, video);
-				
-
-				DocumentReference WorkoutRef = conexion.collection(collectionName).document();
-				WorkoutRef.set(nuevoWorkout);
-				conexion.close();
-				return true;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return false;
-		}
-		
-		
-		// ********** UPDATE **********
-		public boolean mActualizarWorkout() {
-		    Firestore conexion = null;
-
-		    try {
-		        conexion = Conexion.conectar();
-		        Map<String, Object> workoutActualizado = new HashMap<>();
-		        workoutActualizado.put(fieldNombre, nombre);
-		        workoutActualizado.put(fieldDescripcion, descripcion);
-		        workoutActualizado.put(fieldNivel, nivel);
-		        workoutActualizado.put(fieldVideo, video);
-
-		        
-		        DocumentReference WorkoutRef = conexion.collection(collectionName).document(IdWorkout);
-		        WorkoutRef.update(workoutActualizado);
-		        conexion.close();
-		        return true;
-
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		    }
-
-		    return false;
-		}
-		
-
-		// ********** DELETE **********
-		public boolean mEliminarWorkout() {
-		    Firestore conexion = null;
-
-		    try {
-		        conexion = Conexion.conectar();
-		        DocumentReference WorkoutRef = conexion.collection(collectionName).document(IdWorkout);
-		        WorkoutRef.delete();
-		        conexion.close();
-		        return true;
-
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		    }
-
-		    return false;
-		}
+	
 	
 }
