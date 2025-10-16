@@ -137,5 +137,17 @@ public class Inicio extends JFrame {
 		contentPane.add(panelLogoPequeno);
 		panelLogoPequeno.setVisible(false);
 	}
+	
+	
+	/************** Getters y Setters **************/
+	public PanelLogin getPanelLogin() {
+	    return panelLogin;
+	}
+	public PanelRegistro getPanelRegistro() {
+	    return panelRegistro;
+	}
+	public PanelRegistro getBtnRegistrar() {
+	    return getBtnRegistrar();
+	}
 
 }

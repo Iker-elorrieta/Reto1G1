@@ -97,7 +97,7 @@ public class PanelLogin extends JPanel {
 		g2.dispose();
 	}
 	
-	// Getters
+	/************** Getters **************/
 	public JTextField getTextFieldEmail() {
 		return textField;
 	}

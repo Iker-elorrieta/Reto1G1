@@ -173,6 +173,9 @@ public class Usuario {
 			UsuarioRef.set(nuevoUsuario);
 			conexion.close();
 			return true;
+		} catch (InterruptedException | ExecutionException e) {
+			System.out.println("Error: Clase Usuario, metodo mAnadirUsuario");
+			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -205,7 +208,10 @@ public class Usuario {
 	        conexion.close();
 	        return true;
 
-	    } catch (IOException e) {
+	    } catch (InterruptedException | ExecutionException e) {
+			System.out.println("Error: Clase Usuario, metodo mActualizarUsuario");
+			e.printStackTrace();
+		} catch (IOException e) {
 	        e.printStackTrace();
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -216,5 +222,5 @@ public class Usuario {
 	
 
 	
-	
+
 }
