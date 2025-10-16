@@ -20,9 +20,11 @@ public class PanelRegistro extends JPanel {
 	private JTextField txtApellidos;
 	private JTextField txtEmail;
 	private JTextField txtContrasena;
-	private JTextField txtFecNac;
+	//private JTextField txtFecNac;
 	private JButton btnRegistrar;
 	private JButton btnAtras;
+	private JDateChooser dateChooser;
+
 	
 	public PanelRegistro() {
 		setBackground(new Color(255, 255, 255));
@@ -109,15 +111,16 @@ public class PanelRegistro extends JPanel {
 		
 		// Fecha de nacimiento
 		JLabel lblFecNac = new JLabel("Fecha de nacimiento");
-		lblFecNac.setFont(new Font("Raleway", Font.BOLD, 15));
-		lblFecNac.setForeground(new Color(0, 0, 0));
-		lblFecNac.setBounds(38, 275, 294, 14);
-		add(lblFecNac);
-		
-		JDateChooser dateChooser = new JDateChooser();
-		dateChooser.setBounds(38, 295, 294, 30);
-		dateChooser.setFont(new Font("Raleway", Font.PLAIN, 15));
-		add(dateChooser);
+        lblFecNac.setFont(new Font("Raleway", Font.BOLD, 15));
+        lblFecNac.setForeground(new Color(0, 0, 0));
+        lblFecNac.setBounds(38, 275, 294, 14);
+        add(lblFecNac);
+
+        dateChooser = new JDateChooser();
+        dateChooser.setBounds(38, 295, 294, 30);
+        dateChooser.setFont(new Font("Raleway", Font.PLAIN, 15));
+        add(dateChooser);
+
 		
 		// Botón Registrar
 		btnRegistrar = new JButton("Registrar");
@@ -162,16 +165,16 @@ public class PanelRegistro extends JPanel {
 		return txtContrasena;
 	}
 	
-	public JTextField getTxtFecNac() {
-		return txtFecNac;
-	}
-	
 	public JButton getBtnRegistrar() {
 		return btnRegistrar;
 	}
 	
 	public JButton getBtnAtras() {
 		return btnAtras;
+	}
+	
+	public JDateChooser getDateChooser() {
+	        return dateChooser;
 	}
 	
 	public void addRegistrarListener(ActionListener listener) {

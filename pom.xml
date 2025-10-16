@@ -7,17 +7,17 @@
   <artifactId>Gym_Daji</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <dependencies>
-  <dependency>
-    <groupId>com.toedter</groupId>
-    <artifactId>jcalendar</artifactId>
-    <version>1.4</version>
-</dependency>
-	  	<dependency>
-		    <groupId>com.google.firebase</groupId>
-		    <artifactId>firebase-admin</artifactId>
-		    <version>8.1.0</version>
+	  <dependency>
+	    <groupId>com.toedter</groupId>
+	    <artifactId>jcalendar</artifactId>
+	    <version>1.4</version>
 		</dependency>
- </dependencies>
+		  	<dependency>
+			    <groupId>com.google.firebase</groupId>
+			    <artifactId>firebase-admin</artifactId>
+			    <version>8.1.0</version>
+		</dependency>
+  </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>

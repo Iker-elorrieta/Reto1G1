@@ -9,13 +9,14 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class PanelLogin extends JPanel {
 	
 	private static final long serialVersionUID = 1L;
 	private JTextField textField;
-	private JTextField textField_1;
+	private JPasswordField textFieldPassword;
 	private JButton btnIniciarSesion;
 	private JLabel lblRegistrar;
 	
@@ -44,11 +45,9 @@ public class PanelLogin extends JPanel {
 		lblPassword.setBounds(38, 136, 294, 14);
 		add(lblPassword);
 		
-		textField_1 = new JTextField();
-		textField_1.setFont(new Font("Raleway", Font.PLAIN, 15));
-		textField_1.setColumns(10);
-		textField_1.setBounds(38, 161, 294, 30);
-		add(textField_1);
+		textFieldPassword = new JPasswordField();
+		textFieldPassword.setBounds(38, 161, 294, 30);
+		add(textFieldPassword);
 		
 		lblRegistrar = new JLabel("¿No tienes cuenta? Registrate ahora");
 		lblRegistrar.setFont(new Font("Raleway", Font.BOLD, 11));
@@ -103,7 +102,7 @@ public class PanelLogin extends JPanel {
 	}
 	
 	public JTextField getTextFieldPassword() {
-		return textField_1;
+		return textFieldPassword;
 	}
 	
 	public JButton getBtnIniciarSesion() {

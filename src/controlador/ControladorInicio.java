@@ -6,8 +6,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.JDialog;
+import javax.swing.Timer;
 import javax.swing.JOptionPane;
-import javax.swing.event.ListSelectionListener;
 
 import modelo.Usuario;
 import vista.Inicio;
@@ -41,43 +42,50 @@ public  class ControladorInicio implements ActionListener 	{
             String email = vistaInicio.getPanelLogin().getTextFieldEmail().getText().trim();
             String password = vistaInicio.getPanelLogin().getTextFieldPassword().getText().trim();
 
-            if (email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(vistaInicio, "Debe rellenar todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
             Usuario usuario = new Usuario();
-            // Aquí deberías implementar un método para validar usuario por email y contraseña
-            // Por ahora solo mostramos un mensaje de prueba
-            JOptionPane.showMessageDialog(vistaInicio, "Login realizado con: " + email);
+            // si esta bien
+            if (usuario.validarLogin(email, password)) {
+                JOptionPane optionPane = new JOptionPane(
+                    "Login correcto. Bienvenido " + usuario.getNombre(),
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+                
+                JDialog dialog = optionPane.createDialog(vistaInicio, "Login exitoso");
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                
+                Timer timer = new Timer(1000, evt -> dialog.dispose());
+                timer.setRepeats(false); 
+                timer.start();
+                
+                dialog.setVisible(true);
+            // campo empty    
+            } else if (email.isEmpty() || password.isEmpty()) {
+                
+            	JOptionPane.showMessageDialog(vistaInicio, "TODOS LOS CAMPOS SON OBLIGATIOROS", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+            	JOptionPane.showMessageDialog(vistaInicio, "Email o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
 
         }
 
         // Registro
-        else if (source == vistaInicio.getPanelRegistro().getBtnRegistrar()) { 
+        else if (source == vistaInicio.getPanelRegistro().getBtnRegistrar()) {
             String nombre = vistaInicio.getPanelRegistro().getTxtNombre().getText().trim();
             String apellidos = vistaInicio.getPanelRegistro().getTxtApellidos().getText().trim();
             String email = vistaInicio.getPanelRegistro().getTxtEmail().getText().trim();
             String password = vistaInicio.getPanelRegistro().getTxtContrasena().getText().trim();
-            String fechaStr = vistaInicio.getPanelRegistro().getTxtFecNac().getText().trim();
+            Date fechaNacimiento = vistaInicio.getPanelRegistro().getDateChooser().getDate();
 
-            if (nombre.isEmpty() || apellidos.isEmpty() || email.isEmpty() || password.isEmpty() || fechaStr.isEmpty()) {
-                JOptionPane.showMessageDialog(vistaInicio, "Debe rellenar todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            Date fechaNacimiento = null;
-            try {
-                fechaNacimiento = new SimpleDateFormat("dd/MM/yyyy").parse(fechaStr);
-            } catch (ParseException ex) {
-                JOptionPane.showMessageDialog(vistaInicio, "Formato de fecha incorrecto. Use dd/MM/yyyy", "Error", JOptionPane.ERROR_MESSAGE);
+            if (nombre.isEmpty() || apellidos.isEmpty() || email.isEmpty() || password.isEmpty() || fechaNacimiento == null) {
+                JOptionPane.showMessageDialog(vistaInicio, "TODOS LOS CAMPOS SON OBLIGATORIOS", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             Usuario nuevoUsuario = new Usuario(nombre, apellidos, email, password, fechaNacimiento, 1, "usuario");
 
             if (nuevoUsuario.mAnadirUsuario()) {
-                JOptionPane.showMessageDialog(vistaInicio, "Usuario registrado correctamente");
+                JOptionPane.showMessageDialog(vistaInicio, "Usuario registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                 vistaInicio.getPanelRegistro().setVisible(false);
                 vistaInicio.getPanelLogin().setVisible(true);
             } else {
@@ -85,7 +93,7 @@ public  class ControladorInicio implements ActionListener 	{
             }
         }
 
-        // Botón Atras en registro
+        // ---- ATRÁS ----
         else if (source == vistaInicio.getPanelRegistro().getBtnAtras()) {
             vistaInicio.getPanelRegistro().setVisible(false);
             vistaInicio.getPanelLogin().setVisible(true);

@@ -6,9 +6,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import controlador.ControladorInicio;
 
 import java.awt.Graphics;
 import java.awt.Image;
@@ -32,6 +35,7 @@ public class Inicio extends JFrame {
 				try {
 					Inicio frame = new Inicio();
 					frame.setVisible(true);
+					 new ControladorInicio(frame);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -105,7 +109,7 @@ public class Inicio extends JFrame {
 				System.out.println("Apellidos: " + panelRegistro.getTxtApellidos().getText());
 				System.out.println("Email: " + panelRegistro.getTxtEmail().getText());
 				System.out.println("Contraseña: " + panelRegistro.getTxtContrasena().getText());
-				System.out.println("Fecha Nacimiento: " + panelRegistro.getTxtFecNac().getText());
+				System.out.println("Fecha Nacimiento: " + panelRegistro.getDateChooser());
 			}
 		});
 		
@@ -154,8 +158,8 @@ public class Inicio extends JFrame {
 	public PanelRegistro getPanelRegistro() {
 	    return panelRegistro;
 	}
-	public PanelRegistro getBtnRegistrar() {
-	    return getBtnRegistrar();
+	public JButton getBtnRegistrar() {
+		return panelRegistro.getBtnRegistrar();
 	}
 
 }
