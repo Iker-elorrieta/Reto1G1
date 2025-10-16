@@ -112,12 +112,5 @@ public class PanelLogin extends JPanel {
 	public JLabel getLblRegistrar() {
 		return lblRegistrar;
 	}
-	
-	public void addIniciarSesionListener(ActionListener listener) {
-		btnIniciarSesion.addActionListener(listener);
-	}
-	
-	public void addRegistrarListener(java.awt.event.MouseListener listener) {
-		lblRegistrar.addMouseListener(listener);
-	}
+
 }

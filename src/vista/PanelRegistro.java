@@ -177,11 +177,4 @@ public class PanelRegistro extends JPanel {
 	        return dateChooser;
 	}
 	
-	public void addRegistrarListener(ActionListener listener) {
-		btnRegistrar.addActionListener(listener);
-	}
-	
-	public void addAtrasListener(ActionListener listener) {
-		btnAtras.addActionListener(listener);
-	}
 }

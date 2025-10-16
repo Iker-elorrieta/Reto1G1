@@ -19,6 +19,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
+import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -61,44 +62,56 @@ public class Workouts extends JFrame {
 		
 		contentPane = new JPanel();
 		contentPane.setBorder(null);
+		contentPane.setOpaque(true);
+		contentPane.setBackground(Color.WHITE);
 		contentPane.setLayout(null);
 		setContentPane(contentPane);
 
+		
 		JPanel panelIzquierda = new JPanel() {
-            private static final long serialVersionUID = 1L;
-            private Image backgroundImage;
-            // load image once, try classpath first then fallback to file path
-            {
-                java.net.URL imgUrl = getClass().getResource("/fotos/fondo1.png");
-                if (imgUrl != null) {
-                    backgroundImage = new ImageIcon(imgUrl).getImage();
-                } else {
-                    backgroundImage = new ImageIcon("fotos/fondo1.png").getImage();
-                }
-            }
+		    private static final long serialVersionUID = 1L;
+		    private Image backgroundImage;
+		    {
+		        URL imgUrl = getClass().getResource("/fotos/fondo1.png");
+		        if (imgUrl != null) {
+		            backgroundImage = new ImageIcon(imgUrl).getImage();
+		        } else {
+		            backgroundImage = new ImageIcon("fotos/fondo1.png").getImage();
+		        }
+		        setOpaque(false); // keep transparent so rounded shape shows
+		    }
 
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                try {
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    int arc = 30;
-                    // paint rounded background
-                    g2.setColor(getBackground());
-                    g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc));
-                    // draw image scaled to panel size (if available)
-                    if (backgroundImage != null) {
-                        g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-                    }
-                } finally {
-                    g2.dispose();
-                }
-                // allow normal painting of children/borders
-                super.paintComponent(g);
-            }
-        };
+		    @Override
+		    protected void paintComponent(Graphics g) {
+		        Graphics2D g2 = (Graphics2D) g.create();
+		        try {
+		            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		            int arc = 30;
+		            RoundRectangle2D round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
+
+		            // Clip to rounded rectangle so children are painted inside the rounded area
+		            g2.setClip(round);
+
+		            // Draw background image inside the clipped area
+		            if (backgroundImage != null) {
+		                g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+		            } else {
+		                // optional: fill with background color inside the rounded shape
+		                g2.setColor(getBackground());
+		                g2.fill(round);
+		            }
+
+		            // Paint children using the clipped Graphics2D
+		            super.paintComponent(g2);
+		        } finally {
+		            g2.dispose();
+		        }
+		    }
+		};
+		
+
 		panelIzquierda.setBorder(null);
-		panelIzquierda.setBounds(0, 0, 304, 700);
+		panelIzquierda.setBounds(10, 10, 304, 590);
 		panelIzquierda.setLayout(null);
 		panelIzquierda.setOpaque(false);
 		contentPane.add(panelIzquierda);

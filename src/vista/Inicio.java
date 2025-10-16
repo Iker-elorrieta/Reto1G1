@@ -26,22 +26,6 @@ public class Inicio extends JFrame {
 	private JPanel panelLogoGrande;
 	private JPanel panelLogoPequeno;
 	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Inicio frame = new Inicio();
-					frame.setVisible(true);
-					 new ControladorInicio(frame);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
 	/**
 	 * Create the frame.
@@ -77,42 +61,8 @@ public class Inicio extends JFrame {
 			}
 		});
 		
-		panelLogin.addRegistrarListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				panelLogin.setVisible(false);
-				panelRegistro.setVisible(true);
-			}
-		});
 		
-		panelRegistro.addAtrasListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				panelRegistro.setVisible(false);
-				panelLogin.setVisible(true);
-			}
-		});
-		panelLogin.addIniciarSesionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Workouts ventanaWorkouts = new Workouts();
-				ventanaWorkouts.setVisible(true);
-			dispose();	
-			}
-		});
-		
-		panelRegistro.addRegistrarListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.out.println("Registrando usuario...");
-				System.out.println("Nombre: " + panelRegistro.getTxtNombre().getText());
-				System.out.println("Apellidos: " + panelRegistro.getTxtApellidos().getText());
-				System.out.println("Email: " + panelRegistro.getTxtEmail().getText());
-				System.out.println("Contraseña: " + panelRegistro.getTxtContrasena().getText());
-				System.out.println("Fecha Nacimiento: " + panelRegistro.getDateChooser());
-			}
-		});
-		
+	
 		panelLogoGrande = new JPanel() {
             private static final long serialVersionUID = 1L;
 			private Image backgroundImage = new ImageIcon("fotos/logo.png").getImage(); 
@@ -135,6 +85,15 @@ public class Inicio extends JFrame {
             }
         };
         panelLogoPequeno.setOpaque(false);
+        panelLogoGrande.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				panelLogin.setVisible(true);
+				panelRegistro.setVisible(false);
+				panelLogoGrande.setVisible(false);
+				panelLogoPequeno.setVisible(true);
+			}
+		});
 		
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -161,5 +120,6 @@ public class Inicio extends JFrame {
 	public JButton getBtnRegistrar() {
 		return panelRegistro.getBtnRegistrar();
 	}
+	
 
 }
