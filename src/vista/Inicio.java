@@ -47,7 +47,7 @@ public class Inicio extends JFrame {
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(450, 650);
-		setLocationRelativeTo(null); // Centrar en la pantalla
+		setLocationRelativeTo(null); 
 		
 		contentPane = new JPanel() {
             private static final long serialVersionUID = 1L;
@@ -86,6 +86,14 @@ public class Inicio extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				panelRegistro.setVisible(false);
 				panelLogin.setVisible(true);
+			}
+		});
+		panelLogin.addIniciarSesionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Workouts ventanaWorkouts = new Workouts();
+				ventanaWorkouts.setVisible(true);
+			dispose();	
 			}
 		});
 		

@@ -100,11 +100,14 @@ public class Workout {
 			setDescripcion(workout.getString(fieldDescripcion));
 			setNivel(workout.getLong(fieldNivel).intValue());
 			setVideo(workout.getString(fieldVideo));
-
+			conexion.close();
 		} catch (InterruptedException | ExecutionException e) {
 			System.out.println("Error: Clase Workout, metodo mObtenerWorkout");
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -112,7 +115,7 @@ public class Workout {
 		return this;
 	}
 	
-	public ArrayList<Workout> mObtenerWorkout() {
+	public static ArrayList<Workout> mObtenerWorkout() {
 		Firestore conexion = null;
 
 		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();

@@ -1,7 +1,16 @@
 package modelo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
+
+import conexion.Conexion;
 
 public class Ejercicio {
 	
@@ -66,6 +75,45 @@ public class Ejercicio {
 		this.series = series;
 	}
     
+	public static ArrayList<Ejercicio> mObtenerEjerciciosWorkout(Workout workout) {
+		Firestore conexion = null;
+
+		ArrayList<Ejercicio> listaDeEjercicios = new ArrayList<Ejercicio>();
+
+		try {
+			conexion = Conexion.conectar();
+
+			ApiFuture<QuerySnapshot> query = conexion.collection("workouts").document(workout.getIdWorkout()).collection("ejercicios").get();
+
+			QuerySnapshot querySnapshot = query.get();
+			List<QueryDocumentSnapshot> ejercicios = querySnapshot.getDocuments();
+			for (QueryDocumentSnapshot ejercicio : ejercicios) {
+
+				Ejercicio w = new Ejercicio();
+				w.setIdEjercicio(ejercicio.getId());
+				w.setNombre(ejercicio.getString("nombre"));
+				w.setDescripcion(ejercicio.getString("descripcion"));
+				w.setTiempoDescanso(ejercicio.getLong("tiempo_descanso").intValue());
+				
+				
+				
+				listaDeEjercicios.add(w);
+			}
+			conexion.close();
+
+		} catch (InterruptedException | ExecutionException e) {
+			System.out.println("Error: Clase Workout, metodo mObtenerWorkout con arrayList");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return listaDeEjercicios;
+	}
     
 
 }
