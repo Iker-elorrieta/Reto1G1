@@ -14,7 +14,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 import conexion.Conexion;
 
 public class Workout {
-	
+
 	/************** Atributos **************/
 	private String IdWorkout;
 	private String nombre;
@@ -22,17 +22,17 @@ public class Workout {
 	private int nivel;
 	private String video;
 	private List<Ejercicio> ejercicios = new ArrayList<>();
-	
+
 	private static String collectionName = "workouts";
 	private static String fieldNombre = "nombre";
 	private static String fieldDescripcion = "descripcion";
 	private static String fieldNivel = "nivel";
 	private static String fieldVideo = "video";
-	
+
 	/************** Constructores **************/
-	
+
 	public Workout() {
-		
+
 	}
 
 	public Workout(String pNombre, String pDescripcion, int pNivel, String pVideo) {
@@ -41,9 +41,9 @@ public class Workout {
 		this.nivel = pNivel;
 		this.video = pVideo;
 	}
-	
+
 	/************** Getters y Setters **************/
-	
+
 	public String getIdWorkout() {
 		return IdWorkout;
 	}
@@ -83,18 +83,21 @@ public class Workout {
 	public void setVideo(String video) {
 		this.video = video;
 	}
-	
+
 	/************** Metodo CRUD **************/
-	
-	// ********** READ **********	
-	public Workout mObtenerWorkout(int idWorkoutt) {
+
+	// ********** READ **********
+	public Workout mObtenerWorkout(int nivel, int idWorkout) {
 		Firestore conexion = null;
-		
+
 		try {
 			conexion = Conexion.conectar();
 
-			DocumentSnapshot workout = conexion.collection(collectionName).document(String.valueOf(idWorkoutt)).get().get();
-
+			DocumentSnapshot workout = conexion.collection(collectionName).document(String.valueOf(idWorkout)).get()
+					.get();
+			if (workout.getLong(fieldNivel).intValue() < nivel) {
+				return null;
+			}
 			setIdWorkout(workout.getId());
 			setNombre(workout.getString(fieldNombre));
 			setDescripcion(workout.getString(fieldDescripcion));
@@ -114,8 +117,8 @@ public class Workout {
 
 		return this;
 	}
-	
-	public static ArrayList<Workout> mObtenerWorkout() {
+
+	public static ArrayList<Workout> mObtenerWorkout(int nivel) {
 		Firestore conexion = null;
 
 		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();
@@ -123,20 +126,19 @@ public class Workout {
 		try {
 			conexion = Conexion.conectar();
 
-			ApiFuture<QuerySnapshot> query = conexion.collection(collectionName).get();
-
+			ApiFuture<QuerySnapshot> query = conexion.collection(collectionName)
+					.whereLessThanOrEqualTo(fieldNivel, nivel).get();
 			QuerySnapshot querySnapshot = query.get();
 			List<QueryDocumentSnapshot> workouts = querySnapshot.getDocuments();
 			for (QueryDocumentSnapshot workout : workouts) {
 
-				Workout w= new Workout();
-				w.setIdWorkout(workout.getId());				
+				Workout w = new Workout();
+				w.setIdWorkout(workout.getId());
 				w.setNombre(workout.getString(fieldNombre));
 				w.setDescripcion(workout.getString(fieldDescripcion));
 				w.setNivel(workout.getLong(fieldNivel).intValue());
 				w.setVideo(workout.getString(fieldVideo));
-				
-				
+
 				listaDeWorkouts.add(w);
 			}
 			conexion.close();
@@ -153,9 +155,6 @@ public class Workout {
 		}
 
 		return listaDeWorkouts;
-	}	
-	
+	}
 
-	
-	
 }

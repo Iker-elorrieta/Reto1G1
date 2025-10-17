@@ -1,18 +1,12 @@
 package vista;
 
-
-import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-
 import java.awt.Color;
-import java.awt.EventQueue;
-
 import javax.swing.JLabel;
-
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -27,16 +21,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
-import modelo.Ejercicio;
-import modelo.Workout;
-
-
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 
 public class Workouts extends JFrame {
@@ -47,11 +36,15 @@ public class Workouts extends JFrame {
 	private DefaultTableModel modeloEjercicios;
 	private JTable tableWorkouts;
 	private JTable tableEjercicios;
-	private JLabel lblEventos;
-	private JScrollPane scrollPaneEventos;
+	private JLabel lblEjercicios;
+	private JScrollPane scrollPaneEjercicios;
 	private Font fuenteBold = new Font("Raleway", Font.BOLD, 20);
-	 
-	
+	private JButton btnEmpezarWorkout;
+	private JButton btnHistoricoWorkouts;
+	private JButton btnDesconectar;
+	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
+	private JComboBox<String> comboBox;
+
 	public Workouts() {
 		setTitle("Daji Squad Gym");
 		setResizable(false);
@@ -59,7 +52,7 @@ public class Workouts extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, 1000, 650);
 		setLocationRelativeTo(null);
-		
+
 		contentPane = new JPanel();
 		contentPane.setBorder(null);
 		contentPane.setOpaque(true);
@@ -67,48 +60,46 @@ public class Workouts extends JFrame {
 		contentPane.setLayout(null);
 		setContentPane(contentPane);
 
-		
 		JPanel panelIzquierda = new JPanel() {
-		    private static final long serialVersionUID = 1L;
-		    private Image backgroundImage;
-		    {
-		        URL imgUrl = getClass().getResource("/fotos/fondo1.png");
-		        if (imgUrl != null) {
-		            backgroundImage = new ImageIcon(imgUrl).getImage();
-		        } else {
-		            backgroundImage = new ImageIcon("fotos/fondo1.png").getImage();
-		        }
-		        setOpaque(false); // keep transparent so rounded shape shows
-		    }
+			private static final long serialVersionUID = 1L;
+			private Image backgroundImage;
+			{
+				URL imgUrl = getClass().getResource("/fotos/fondo1.png");
+				if (imgUrl != null) {
+					backgroundImage = new ImageIcon(imgUrl).getImage();
+				} else {
+					backgroundImage = new ImageIcon("fotos/fondo1.png").getImage();
+				}
+				setOpaque(false); // keep transparent so rounded shape shows
+			}
 
-		    @Override
-		    protected void paintComponent(Graphics g) {
-		        Graphics2D g2 = (Graphics2D) g.create();
-		        try {
-		            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		            int arc = 30;
-		            RoundRectangle2D round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
+			@Override
+			protected void paintComponent(Graphics g) {
+				Graphics2D g2 = (Graphics2D) g.create();
+				try {
+					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					int arc = 30;
+					RoundRectangle2D round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
 
-		            // Clip to rounded rectangle so children are painted inside the rounded area
-		            g2.setClip(round);
+					// Clip to rounded rectangle so children are painted inside the rounded area
+					g2.setClip(round);
 
-		            // Draw background image inside the clipped area
-		            if (backgroundImage != null) {
-		                g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-		            } else {
-		                // optional: fill with background color inside the rounded shape
-		                g2.setColor(getBackground());
-		                g2.fill(round);
-		            }
+					// Draw background image inside the clipped area
+					if (backgroundImage != null) {
+						g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+					} else {
+						// optional: fill with background color inside the rounded shape
+						g2.setColor(getBackground());
+						g2.fill(round);
+					}
 
-		            // Paint children using the clipped Graphics2D
-		            super.paintComponent(g2);
-		        } finally {
-		            g2.dispose();
-		        }
-		    }
+					// Paint children using the clipped Graphics2D
+					super.paintComponent(g2);
+				} finally {
+					g2.dispose();
+				}
+			}
 		};
-		
 
 		panelIzquierda.setBorder(null);
 		panelIzquierda.setBounds(10, 10, 304, 590);
@@ -116,202 +107,232 @@ public class Workouts extends JFrame {
 		panelIzquierda.setOpaque(false);
 		contentPane.add(panelIzquierda);
 
-		JButton btnDesconectar = new JButton("Desconectar");
+		btnDesconectar = new JButton("Desconectar");
 		btnDesconectar.setForeground(new Color(0, 0, 0));
 		btnDesconectar.setFont(fuenteBold);
 		btnDesconectar.setBackground(new Color(255, 255, 255));
 		btnDesconectar.setBounds(10, 540, 284, 38);
 		panelIzquierda.add(btnDesconectar);
 
-		JButton btnGenerarOfertaViaje = new JButton("Editar perfil");
-		btnGenerarOfertaViaje.setForeground(new Color(0, 0, 0));
-		btnGenerarOfertaViaje.setFont(fuenteBold);
-		btnGenerarOfertaViaje.setBackground(new Color(255, 255, 255));
-		btnGenerarOfertaViaje.setBounds(10, 491, 284, 38);
-		panelIzquierda.add(btnGenerarOfertaViaje);
-		
-		JPanel panelLogo = new JPanel() {
-            private static final long serialVersionUID = 1L;
-			private Image backgroundImage = new ImageIcon("fotos/logo.png").getImage(); 
+		JButton btnEditarPerfil = new JButton("Editar perfil");
+		btnEditarPerfil.setForeground(new Color(0, 0, 0));
+		btnEditarPerfil.setFont(fuenteBold);
+		btnEditarPerfil.setBackground(new Color(255, 255, 255));
+		btnEditarPerfil.setBounds(10, 491, 284, 38);
+		panelIzquierda.add(btnEditarPerfil);
 
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-            }
-        };
-		panelLogo.setBounds(10, 20, 280, 280);
+		JPanel panelLogo = new JPanel() {
+			private static final long serialVersionUID = 1L;
+			private Image backgroundImage = new ImageIcon("fotos/logo.png").getImage();
+
+			@Override
+			protected void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+			}
+		};
+		panelLogo.setBounds(30, 10, 230, 230);
 		panelLogo.setOpaque(false);
 		panelIzquierda.add(panelLogo);
+		
+		btnHistoricoWorkouts = new JButton("Historial de workouts");
+		btnHistoricoWorkouts.setForeground(Color.BLACK);
+		btnHistoricoWorkouts.setFont(fuenteBold);
+		btnHistoricoWorkouts.setBackground(Color.WHITE);
+		btnHistoricoWorkouts.setBounds(10, 442, 284, 38);
+		panelIzquierda.add(btnHistoricoWorkouts);
 
-		
 		// TABLA VIAJES
-		
-		
-		modeloWorkouts = new DefaultTableModel(new String[]{"ID", "Nombre", "Descripcion", "Nivel","Video"}, 0);
+
+		modeloWorkouts = new DefaultTableModel(new String[] { "ID", "Nivel", "Nombre", "Descripcion","URLVideo","Video" }, 0);
 		tableWorkouts = new JTable(modeloWorkouts);
-		tableWorkouts.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-		tableWorkouts.getTableHeader().setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		tableWorkouts.setFont(new Font("Raleway", Font.PLAIN, 15));
+		tableWorkouts.getTableHeader().setFont(new Font("Raleway", Font.PLAIN, 15));
 		tableWorkouts.setRowHeight(25);
 		// Desactivar ediciones
 		tableWorkouts.setDefaultEditor(Object.class, null);
 		// Ocultar columna ViajeID
 		tableWorkouts.getColumnModel().getColumn(0).setMinWidth(0);
 		tableWorkouts.getColumnModel().getColumn(0).setMaxWidth(0);
+		// Mostrar nivel corto
+		tableWorkouts.getColumnModel().getColumn(1).setMinWidth(60);
+		tableWorkouts.getColumnModel().getColumn(1).setMaxWidth(60);
+		// Ocultar columna URLVIDEO
+		tableWorkouts.getColumnModel().getColumn(4).setMinWidth(0);
+		tableWorkouts.getColumnModel().getColumn(4).setMaxWidth(0);
+		// Mostrar columna ver video corta
+		tableWorkouts.getColumnModel().getColumn(5).setMinWidth(80);
+		tableWorkouts.getColumnModel().getColumn(5).setMaxWidth(80);
+		// Mostrar nombre corto
+		tableWorkouts.getColumnModel().getColumn(2).setMinWidth(150);
+		tableWorkouts.getColumnModel().getColumn(2).setMaxWidth(150);
 		// Desactivar mover columnas
 		tableWorkouts.getTableHeader().setReorderingAllowed(false);
 		// Ordenar por fecha de inicio
 		TableRowSorter<TableModel> sort = new TableRowSorter<>(modeloWorkouts);
 		tableWorkouts.setRowSorter(sort);
 		sort.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
-	
-		
-		JScrollPane scrollPaneViajes = new JScrollPane();
-		scrollPaneViajes.setBounds(327, 91, 647, 208);
-		scrollPaneViajes.getViewport().setBackground(Color.WHITE);
-		contentPane.add(scrollPaneViajes);
-		scrollPaneViajes.setViewportView(tableWorkouts);
+
+		JScrollPane scrollPaneWorkouts = new JScrollPane();
+		scrollPaneWorkouts.setBounds(327, 91, 647, 208);
+		scrollPaneWorkouts.getViewport().setBackground(Color.WHITE);
+		contentPane.add(scrollPaneWorkouts);
+		scrollPaneWorkouts.setViewportView(tableWorkouts);
 
 		// TABLA EVENTOS
-		
 
-		modeloEjercicios = new DefaultTableModel(new String[]{"EventoID", "Nombre", "Tipo", "Fecha", "Precio"}, 0);
+		modeloEjercicios = new DefaultTableModel(new String[] { "ID", "Nombre", "Descripción", "Descanso" }, 0);
 		tableEjercicios = new JTable(modeloEjercicios);
-		tableEjercicios.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-		tableEjercicios.getTableHeader().setFont(new Font("Segoe UI", Font.PLAIN, 15));
+		tableEjercicios.setFont(new Font("Raleway", Font.PLAIN, 15));
+		tableEjercicios.getTableHeader().setFont(new Font("Raleway", Font.PLAIN, 15));
 		tableEjercicios.setRowHeight(25);
 		// Desactivar ediciones
 		tableEjercicios.setDefaultEditor(Object.class, null);
 		// Ocultar columna EventoID
 		tableEjercicios.getColumnModel().getColumn(0).setMinWidth(0);
 		tableEjercicios.getColumnModel().getColumn(0).setMaxWidth(0);
+		// Mostrar nombre corto
+		tableEjercicios.getColumnModel().getColumn(1).setMinWidth(150);
+		tableEjercicios.getColumnModel().getColumn(1).setMaxWidth(150);
+		// Mostrat tiempo descanso corto
+		tableEjercicios.getColumnModel().getColumn(3).setMinWidth(100);
+		tableEjercicios.getColumnModel().getColumn(3).setMaxWidth(100);
 		// Desactivar mover columnas
 		tableEjercicios.getTableHeader().setReorderingAllowed(false);
 		// Ordenar por fecha
-		TableRowSorter<TableModel> sortEventos = new TableRowSorter<>(modeloEjercicios);
-		tableEjercicios.setRowSorter(sortEventos);
-		sortEventos.setSortKeys(Collections.singletonList(new RowSorter.SortKey(3, SortOrder.ASCENDING)));
-		scrollPaneEventos = new JScrollPane();
-		scrollPaneEventos.setBounds(327, 392, 647, 208);
-		contentPane.add(scrollPaneEventos);
-		scrollPaneEventos.setViewportView(tableEjercicios);
-		scrollPaneEventos.getViewport().setBackground(Color.WHITE);
+		TableRowSorter<TableModel> sortEjercicios = new TableRowSorter<>(modeloEjercicios);
+		tableEjercicios.setRowSorter(sortEjercicios);
+		sortEjercicios.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
+		scrollPaneEjercicios = new JScrollPane();
+		scrollPaneEjercicios.setBounds(327, 392, 647, 208);
+		contentPane.add(scrollPaneEjercicios);
+		scrollPaneEjercicios.setViewportView(tableEjercicios);
+		scrollPaneEjercicios.getViewport().setBackground(Color.WHITE);
+		btnEmpezarWorkout = new JButton("Empezar workout");
+		btnEmpezarWorkout.setForeground(Color.BLACK);
+		btnEmpezarWorkout.setFont(fuenteBold);
+		btnEmpezarWorkout.setBackground(new Color(128, 255, 0));
+		btnEmpezarWorkout.setBounds(759, 341, 215, 38);
+		contentPane.add(btnEmpezarWorkout);
 		
-	
-	
-	
-		
+		comboBox = new JComboBox<String>();
+		comboBox.setModel(modeloComboBox);
+		comboBox.setFont(fuenteBold);
+		comboBox.setBounds(759, 35, 215, 45);
+		contentPane.add(comboBox);
+
 		// LABELS
-	
+
+		JLabel lblWorkouts = new JLabel("Workouts");
+		lblWorkouts.setFont(new Font("Raleway", Font.PLAIN, 30));
+		lblWorkouts.setBounds(327, 29, 160, 51);
+		contentPane.add(lblWorkouts);
+
+		lblEjercicios = new JLabel("Ejercicios");
+		lblEjercicios.setFont(new Font("Raleway", Font.PLAIN, 30));
+		lblEjercicios.setBounds(327, 330, 139, 51);
+		contentPane.add(lblEjercicios);
 		
-		JLabel lblViaje = new JLabel("Workouts");
-		lblViaje.setFont(new Font("Segoe UI", Font.PLAIN, 30));
-		lblViaje.setBounds(327, 29, 160, 51);
-		contentPane.add(lblViaje);
 
-		lblEventos = new JLabel("Ejercicios");
-		lblEventos.setFont(new Font("Segoe UI", Font.PLAIN, 30));
-		lblEventos.setBounds(327, 330, 139, 51);
-		contentPane.add(lblEventos);
+	
 		tableEjercicios.setVisible(false);
-		lblEventos.setVisible(false);
-		scrollPaneEventos.setVisible(false);
-		tableWorkouts.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent event) {
-				Workout seleccionado = workoutSeleccionado();
-				if (seleccionado != null) {
-					cargarEjercicios(seleccionado);
-				}
-			}
-		});
-		cargarEjercicios();
+		lblEjercicios.setVisible(false);
+		btnEmpezarWorkout.setVisible(false);
+		scrollPaneEjercicios.setVisible(false);
 	}
-	
-	public  void cargarEjercicios() {
-		modeloWorkouts.setRowCount(0);
-		ArrayList<Workout> workoutsArray =Workout.mObtenerWorkout();
-		for (int i = 0; i < workoutsArray.size(); i++) {
-			String[] fila = new String[6];
-			fila[0] = workoutsArray.get(i).getIdWorkout();
-			fila[1] = workoutsArray.get(i).getNombre();
-			fila[2] = workoutsArray.get(i).getDescripcion();
-			fila[3] = workoutsArray.get(i).getNivel()+"";
-			fila[4] = workoutsArray.get(i).getVideo();
 
-			modeloWorkouts.addRow(fila);
-		}
-	}
-	
-	public void cargarEjercicios(Workout workout) {
-		modeloEjercicios.setRowCount(0);
-		ArrayList<Ejercicio> ejerciciosArray =Ejercicio.mObtenerEjerciciosWorkout(workout);
-		for (int i = 0; i < ejerciciosArray.size(); i++) {
-			String[] fila = new String[6];
-			fila[0] = ejerciciosArray.get(i).getIdEjercicio();
-			fila[1] = ejerciciosArray.get(i).getNombre();
-			fila[2] = ejerciciosArray.get(i).getDescripcion();
-			fila[3] = ejerciciosArray.get(i).getTiempoDescanso()+"";
-
-			modeloEjercicios.addRow(fila);
-		}
-		tableEjercicios.setVisible(true);
-		lblEventos.setVisible(true);
-		scrollPaneEventos.setVisible(true);
-	}
-	public Workout workoutSeleccionado() {
-		if (tableWorkouts.getSelectedRow() != -1) {
-			String IDSeleccionado = tableWorkouts.getValueAt(tableWorkouts.getSelectedRow(), 0).toString();
-			ArrayList<Workout> workoutsArray =Workout.mObtenerWorkout();
-			for (int i = 0; i < workoutsArray.size(); i++) {
-				if (workoutsArray.get(i).getIdWorkout().equals(IDSeleccionado)) {
-					return workoutsArray.get(i);
-				}
-			}
-		}
-		return null;
-	}
 	public static Color colorTexto(Color fondo) {
-        double iluminacion = (0.299 * fondo.getRed() + 0.587 * fondo.getGreen() + 0.114 * fondo.getBlue()) / 255;
-        return iluminacion < 0.5 ? Color.WHITE : Color.BLACK;
-    }
-
+		double iluminacion = (0.299 * fondo.getRed() + 0.587 * fondo.getGreen() + 0.114 * fondo.getBlue()) / 255;
+		return iluminacion < 0.5 ? Color.WHITE : Color.BLACK;
+	}
 
 	public DefaultTableModel getModeloWorkouts() {
 		return modeloWorkouts;
 	}
 
-
 	public void setModeloWorkouts(DefaultTableModel modeloWorkouts) {
 		this.modeloWorkouts = modeloWorkouts;
 	}
-
 
 	public DefaultTableModel getModeloEjercicios() {
 		return modeloEjercicios;
 	}
 
-
 	public void setModeloEjercicios(DefaultTableModel modeloEjercicios) {
 		this.modeloEjercicios = modeloEjercicios;
 	}
-
 
 	public JTable getTableWorkouts() {
 		return tableWorkouts;
 	}
 
-
 	public void setTableWorkouts(JTable tableWorkouts) {
 		this.tableWorkouts = tableWorkouts;
 	}
-
 
 	public JTable getTableEjercicios() {
 		return tableEjercicios;
 	}
 
-
 	public void setTableEjercicios(JTable tableEjercicios) {
 		this.tableEjercicios = tableEjercicios;
 	}
+
+	public JLabel getLblEventos() {
+		return lblEjercicios;
+	}
+
+	public void setLblEventos(JLabel lblEventos) {
+		this.lblEjercicios = lblEventos;
+	}
+
+	public JScrollPane getScrollPaneEventos() {
+		return scrollPaneEjercicios;
+	}
+
+	public void setScrollPaneEventos(JScrollPane scrollPaneEventos) {
+		this.scrollPaneEjercicios = scrollPaneEventos;
+	}
+
+	public JButton getBtnEmpezarWorkout() {
+		return btnEmpezarWorkout;
+	}
+
+	public void setBtnEmpezarWorkout(JButton btnEmpezarWorkout) {
+		this.btnEmpezarWorkout = btnEmpezarWorkout;
+	}
+
+	public JButton getBtnHistoricoWorkouts() {
+		return btnHistoricoWorkouts;
+	}
+
+	public void setBtnHistoricoWorkouts(JButton btnHistoricoWorkouts) {
+		this.btnHistoricoWorkouts = btnHistoricoWorkouts;
+	}
+
+	public JButton getBtnDesconectar() {
+		return btnDesconectar;
+	}
+
+	public void setBtnDesconectar(JButton btnDesconectar) {
+		this.btnDesconectar = btnDesconectar;
+	}
+
+	public DefaultComboBoxModel<String> getModeloComboBox() {
+		return modeloComboBox;
+	}
+
+	public void setModeloComboBox(DefaultComboBoxModel<String> modeloComboBox) {
+		this.modeloComboBox = modeloComboBox;
+	}
+
+	public JComboBox<String> getComboBox() {
+		return comboBox;
+	}
+
+	public void setComboBox(JComboBox<String> comboBox) {
+		this.comboBox = comboBox;
+	}
+	
+	
 }
