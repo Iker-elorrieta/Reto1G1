@@ -1,6 +1,6 @@
 package controlador;
 
-import java.awt.Cursor;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,13 +10,12 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import javax.swing.JOptionPane;
+import com.toedter.calendar.JDateChooser;
+
+import javax.swing.JTextField;
 
 import modelo.Ejercicio;
 import modelo.Usuario;
@@ -24,11 +23,11 @@ import modelo.Workout;
 import vista.Inicio;
 import vista.Workouts;
 
-public class ControladorInicio implements ActionListener, ListSelectionListener {
+public class ControladorInicio extends MouseAdapter implements ActionListener, ListSelectionListener {
 
 	private Inicio vistaInicio;
 	private Workouts vistaWorkouts;
-	
+
 	private ArrayList<Workout> workouts;
 	private Usuario usuario;
 
@@ -42,20 +41,15 @@ public class ControladorInicio implements ActionListener, ListSelectionListener 
 
 	private void inicializarControlador() {
 
-		// Login
+		// Inicio
+		vistaInicio.getContentPane().addMouseListener(this);
+		vistaInicio.getPanelLogoGrande().addMouseListener(this);
+		// Panel Login
 		vistaInicio.getPanelLogin().getBtnIniciarSesion().setActionCommand("INICIAR_SESION");
 		vistaInicio.getPanelLogin().getBtnIniciarSesion().addActionListener(this);
+		vistaInicio.getPanelLogin().getLblRegistrar().addMouseListener(this);
 
-		final JLabel lblRegistrar = vistaInicio.getPanelLogin().getLblRegistrar();
-		lblRegistrar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		lblRegistrar.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				actionPerformed(new ActionEvent(lblRegistrar, ActionEvent.ACTION_PERFORMED, "MOSTRAR_REGISTRO"));
-			}
-		});
-
-		// Registro
+		// Panel Registro
 		vistaInicio.getPanelRegistro().getBtnRegistrar().setActionCommand("REGISTRAR");
 		vistaInicio.getPanelRegistro().getBtnRegistrar().addActionListener(this);
 
@@ -65,48 +59,12 @@ public class ControladorInicio implements ActionListener, ListSelectionListener 
 		// Workouts
 		vistaWorkouts.getBtnDesconectar().setActionCommand("DESCONECTAR");
 		vistaWorkouts.getBtnDesconectar().addActionListener(this);
+
 		vistaWorkouts.getTableWorkouts().getSelectionModel().addListSelectionListener(this);
-		vistaWorkouts.getComboBox().addActionListener(e -> {
-		    String sel = (String) vistaWorkouts.getComboBox().getSelectedItem();
-		    int filtro = 0;
-		    if (sel != null && sel.startsWith("Nivel ")) {
-		        try {
-		            filtro = Integer.parseInt(sel.substring(6));
-		        } catch (NumberFormatException ex) {
-		            filtro = 0;
-		        }
-		    }
-		    mRellenarTablaWorkouts(filtro);
-		});
-		vistaWorkouts.getTableWorkouts().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
+		vistaWorkouts.getComboBox().setActionCommand("FILTRAR_NIVEL");
+		vistaWorkouts.getComboBox().addActionListener(this);
+		vistaWorkouts.getTableWorkouts().addMouseListener(this);
 
-				int colView = vistaWorkouts.getTableWorkouts().columnAtPoint(e.getPoint());
-				int rowView = vistaWorkouts.getTableWorkouts().rowAtPoint(e.getPoint());
-				if (colView == -1 || rowView == -1)
-					return;
-
-				int colModel = vistaWorkouts.getTableWorkouts().convertColumnIndexToModel(colView);
-				if (colModel == 5) {
-					int rowModel = vistaWorkouts.getTableWorkouts().convertRowIndexToModel(rowView);
-					Object urlCell = vistaWorkouts.getModeloWorkouts().getValueAt(rowModel, 4);
-					if (urlCell == null)
-						return;
-					String url = urlCell.toString().trim();
-					if (url.isEmpty())
-						return;
-
-					try {
-						Desktop.getDesktop().browse(new URI(url));
-
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			}
-		});
-		
 	}
 
 	@Override
@@ -114,136 +72,258 @@ public class ControladorInicio implements ActionListener, ListSelectionListener 
 		String cmd = e.getActionCommand();
 
 		switch (cmd) {
+		case "MOSTRAR_LOGIN":
+			mMostrarPanelLogin();
+			break;
 		case "INICIAR_SESION":
 			mIniciarSesion();
 			break;
-
 		case "REGISTRAR":
 			mRegistro();
 			break;
 
 		case "ATRAS":
+			vistaInicio.getPanelLogin().vaciar();
 			vistaInicio.getPanelRegistro().setVisible(false);
 			vistaInicio.getPanelLogin().setVisible(true);
 			break;
 		case "MOSTRAR_REGISTRO":
+			vistaInicio.getPanelRegistro().vaciar();
 			vistaInicio.getPanelLogin().setVisible(false);
 			vistaInicio.getPanelRegistro().setVisible(true);
 			break;
 		case "DESCONECTAR":
 			mDesconectar();
 			break;
+		case "FILTRAR_NIVEL":
+			mFiltrarNiveles();
+			break;
+		case "WORKOUT_SELECCIONADO":
+			mCargarEjercicios(mWorkoutSeleccionado());
+			break;
 		default:
 			break;
 		}
 
 	}
+
+	@Override
 	public void valueChanged(ListSelectionEvent event) {
-		Workout seleccionado = mWorkoutSeleccionado();
-		if (seleccionado != null) {
-			mCargarEjercicios(seleccionado);
+		// Mover un ListSelectionListener a actionPerformed
+		if (event.getSource() == vistaWorkouts.getTableWorkouts().getSelectionModel()) {
+			actionPerformed(new ActionEvent(vistaWorkouts.getTableWorkouts(), ActionEvent.ACTION_PERFORMED,
+					"WORKOUT_SELECCIONADO"));
+		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		if (e.getSource() == vistaInicio.getPanelLogin().getLblRegistrar()) {
+			actionPerformed(new ActionEvent(vistaInicio.getPanelLogin().getLblRegistrar(), ActionEvent.ACTION_PERFORMED,
+					"MOSTRAR_REGISTRO"));
+		} else if (e.getSource() == vistaWorkouts.getTableWorkouts()) {
+			mAbrirVideo(e);
+		} else if (e.getSource() == vistaInicio.getPanelLogoGrande() || e.getSource() == vistaInicio.getContentPane()) {
+			mMostrarPanelLogin();
+		}
+	}
+
+	public void mMostrarPanelLogin() {
+		if (vistaInicio.getPanelLogoGrande().isVisible()) {
+			vistaInicio.getPanelLogin().setVisible(true);
+			vistaInicio.getPanelRegistro().setVisible(false);
+			vistaInicio.getPanelLogoGrande().setVisible(false);
+			vistaInicio.getPanelLogoPequeno().setVisible(true);
 		}
 	}
 
 	public void mIniciarSesion() {
-		String email = vistaInicio.getPanelLogin().getTextFieldEmail().getText().trim();
-		String password = vistaInicio.getPanelLogin().getTextFieldPassword().getText().trim();
+		JTextField txtEmail = vistaInicio.getPanelLogin().getTextFieldEmail();
+		JTextField txtContasena = vistaInicio.getPanelLogin().getTextFieldContrasena();
 
-		// si esta bien
-		if (usuario.validarLogin(email, password)) {
-			JOptionPane optionPane = new JOptionPane("Login correcto. Bienvenido " + usuario.getNombre(),
-					JOptionPane.INFORMATION_MESSAGE);
-			mCargarWorkouts();
+		String email = txtEmail.getText().trim();
+		String contrasena = txtContasena.getText().trim();
 
-			JDialog dialog = optionPane.createDialog(vistaInicio, "Login exitoso");
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		boolean emailPlaceholder = (boolean) txtEmail.getClientProperty("placeholder");
+		boolean contrasenaPlaceholder = (boolean) txtContasena.getClientProperty("placeholder");
 
-			Timer timer = new Timer(1000, evt -> dialog.dispose());
-			timer.setRepeats(false);
-			timer.start();
-
-			dialog.setVisible(true);
-			vistaInicio.setVisible(false);
-			vistaWorkouts.setVisible(true);
-			// campo empty
-		} else if (email.isEmpty() || password.isEmpty()) {
-
-			JOptionPane.showMessageDialog(vistaInicio, "TODOS LOS CAMPOS SON OBLIGATIOROS", "Error",
-					JOptionPane.ERROR_MESSAGE);
-		} else {
-			JOptionPane.showMessageDialog(vistaInicio, "Email o contraseña incorrectos", "Error",
-					JOptionPane.ERROR_MESSAGE);
+		if (email.isEmpty() || emailPlaceholder) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, txtEmail);
 		}
-
-	}
-
-	public void mRegistro() {
-		String nombre = vistaInicio.getPanelRegistro().getTxtNombre().getText().trim();
-		String apellidos = vistaInicio.getPanelRegistro().getTxtApellidos().getText().trim();
-		String email = vistaInicio.getPanelRegistro().getTxtEmail().getText().trim();
-		String password = vistaInicio.getPanelRegistro().getTxtContrasena().getText().trim();
-		Date fechaNacimiento = vistaInicio.getPanelRegistro().getDateChooser().getDate();
-
-		if (nombre.isEmpty() || apellidos.isEmpty() || email.isEmpty() || password.isEmpty()
-				|| fechaNacimiento == null) {
-			JOptionPane.showMessageDialog(vistaInicio, "TODOS LOS CAMPOS SON OBLIGATORIOS", "Error",
-					JOptionPane.ERROR_MESSAGE);
+		if (contrasena.isEmpty() || contrasenaPlaceholder) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, txtContasena);
+		}
+		if (!email.isEmpty() && !emailPlaceholder && !emailValido(email)) {
+			Inicio.placeholder("Correo electrónico no válido", Color.RED, txtEmail);
+		}
+		if (email.isEmpty() || contrasena.isEmpty() || emailPlaceholder || contrasenaPlaceholder
+				|| !emailValido(email)) {
 			return;
 		}
 
-		Usuario nuevoUsuario = new Usuario(nombre, apellidos, email, password, fechaNacimiento, 1, "usuario");
+		// si esta bien
+		try {
+			if (usuario.validarLogin(email, contrasena)) {
+				mCargarWorkouts();
+				vistaInicio.setVisible(false);
+				vistaWorkouts.setVisible(true);
+			} else {
+				vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
+				vistaInicio.getPanelLogin().getLblError().setText("Correo electrónico o contraseña incorrectos");
+			}
+		} catch (Exception e) {
+			vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
+			vistaInicio.getPanelLogin().getLblError().setText("Error al conectar con la base de datos");
+		}
 
-		if (nuevoUsuario.mAnadirUsuario()) {
-			JOptionPane.showMessageDialog(vistaInicio, "Usuario registrado correctamente", "Éxito",
-					JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	// java
+	public void mRegistro() {
+		JTextField txtNombre = vistaInicio.getPanelRegistro().getTxtNombre();
+		JTextField txtApellidos = vistaInicio.getPanelRegistro().getTxtApellidos();
+		JTextField txtEmail = vistaInicio.getPanelRegistro().getTxtEmail();
+		JTextField txtContrasena = vistaInicio.getPanelRegistro().getTxtContrasena();
+		JDateChooser dateChooser = vistaInicio.getPanelRegistro().getDateChooser();
+		JTextField dateField = (JTextField) dateChooser.getDateEditor().getUiComponent();
+
+		String nombre = txtNombre.getText().trim();
+		String apellidos = txtApellidos.getText().trim();
+		String email = txtEmail.getText().trim();
+		String password = txtContrasena.getText().trim();
+		Date fechaNacimiento = dateChooser.getDate();
+
+		boolean nombrePH = Boolean.TRUE.equals(txtNombre.getClientProperty("placeholder"));
+		boolean apellidosPH = Boolean.TRUE.equals(txtApellidos.getClientProperty("placeholder"));
+		boolean emailPH = Boolean.TRUE.equals(txtEmail.getClientProperty("placeholder"));
+		boolean passwordPH = Boolean.TRUE.equals(txtContrasena.getClientProperty("placeholder"));
+		boolean fechaPH = Boolean.TRUE.equals(dateField.getClientProperty("placeholder"));
+
+		if (nombre.isEmpty() || nombrePH) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, txtNombre);
+		}
+		if (apellidos.isEmpty() || apellidosPH) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, txtApellidos);
+		}
+		if (email.isEmpty() || emailPH) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, txtEmail);
+		}
+		if (password.isEmpty() || passwordPH) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, txtContrasena);
+		}
+		if (fechaNacimiento == null || fechaPH) {
+			Inicio.placeholder("Campo obligatorio", Color.RED, dateField);
+		}
+		if (!email.isEmpty() && !emailPH && !emailValido(email)) {
+			Inicio.placeholder("Correo electrónico no válido", Color.RED, txtEmail);
+		}
+
+		if (nombre.isEmpty() || apellidos.isEmpty() || email.isEmpty() || password.isEmpty() || fechaNacimiento == null
+				|| nombrePH || apellidosPH || emailPH || passwordPH || fechaPH || !emailValido(email)) {
+			return;
+		}
+		try {
+			if (usuario.mExisteUsuario(email)) {
+				vistaInicio.getPanelRegistro().getLblError().setForeground(Color.RED);
+				vistaInicio.getPanelRegistro().getLblError().setText("El correo electrónico ya está registrado");
+				return;
+			}
+
+			Usuario nuevoUsuario = new Usuario(nombre, apellidos, email, password, fechaNacimiento, 1, "cliente");
+
+			nuevoUsuario.mAnadirUsuario();
 			vistaInicio.getPanelRegistro().setVisible(false);
 			vistaInicio.getPanelLogin().setVisible(true);
-		} else {
-			JOptionPane.showMessageDialog(vistaInicio, "Error al registrar usuario", "Error",
-					JOptionPane.ERROR_MESSAGE);
+			vistaInicio.getPanelLogin().vaciar();
+			vistaInicio.getPanelLogin().getLblError().setForeground(Color.BLACK);
+			vistaInicio.getPanelLogin().getLblError().setText("Registro exitoso. Por favor, inicia sesión.");
+		} catch (Exception e) {
+			vistaInicio.getPanelRegistro().getLblError().setForeground(Color.RED);
+			vistaInicio.getPanelRegistro().getLblError().setText("Error al registrar el usuario");
+			e.printStackTrace();
 		}
+
 	}
 
 	public void mCargarWorkouts() {
-	    vistaWorkouts.getModeloWorkouts().setRowCount(0);
-	    workouts = Workout.mObtenerWorkout(usuario.getNivel());
-	    mRellenarTablaWorkouts(0);
+		vistaWorkouts.getModeloWorkouts().setRowCount(0);
+		workouts = Workout.mObtenerWorkout(usuario.getNivel());
+		mRellenarTablaWorkouts(0);
 
-	    vistaWorkouts.getModeloComboBox().removeAllElements();
-	    vistaWorkouts.getModeloComboBox().addElement("Todos los niveles");
-	    for (int i = 1; i <= usuario.getNivel(); i++) {
-	        vistaWorkouts.getModeloComboBox().addElement("Nivel " + i);
-	    }
+		vistaWorkouts.getModeloComboBox().removeAllElements();
+		vistaWorkouts.getModeloComboBox().addElement("Todos los niveles");
+		for (int i = 1; i <= usuario.getNivel(); i++) {
+			vistaWorkouts.getModeloComboBox().addElement("Nivel " + i);
+		}
 	}
 
 	private void mRellenarTablaWorkouts(int filtroNivel) {
-	    vistaWorkouts.getModeloWorkouts().setRowCount(0);
-	    if (workouts == null) return;
-	    boolean seleccionadoEncontrado = false;
-	    Workout seleccionado = mWorkoutSeleccionado();
-	    for (int i = 0; i < workouts.size(); i++) {
-	        Workout w = workouts.get(i);
-	        if (filtroNivel == 0 || w.getNivel() == filtroNivel) {
-	            String[] fila = new String[6];
-	            fila[0] = w.getIdWorkout();
-	            fila[1] = w.getNivel() + "";
-	            fila[2] = w.getNombre();
-	            fila[3] = w.getDescripcion();
-	            fila[4] = w.getVideo();
-	            fila[5] = "Ver vídeo";
-	            vistaWorkouts.getModeloWorkouts().addRow(fila);
-	            if(seleccionado!=null && w.getIdWorkout().equals(seleccionado.getIdWorkout())) {
-	            	seleccionadoEncontrado = true;
-	            }
-	        }
-	    }
-		mMostrarOcultarEjercicios(seleccionadoEncontrado);
+		if (workouts == null)
+			return;
+		vistaWorkouts.getModeloWorkouts().setRowCount(0);
+		for (int i = 0; i < workouts.size(); i++) {
+			Workout w = workouts.get(i);
+			if (filtroNivel == 0 || w.getNivel() == filtroNivel) {
+				String[] fila = new String[6];
+				fila[0] = w.getIdWorkout();
+				fila[1] = w.getNivel() + "";
+				fila[2] = w.getNombre();
+				fila[3] = w.getDescripcion();
+				fila[4] = w.getVideo();
+				fila[5] = "Ver vídeo";
+				vistaWorkouts.getModeloWorkouts().addRow(fila);
 
+			}
+		}
+		mMostrarOcultarEjercicios(false);
+	}
+
+	public void mFiltrarNiveles() {
+		String sel = (String) vistaWorkouts.getComboBox().getSelectedItem();
+		int filtro = 0;
+		if (sel != null && sel.startsWith("Nivel ")) {
+			try {
+				// Es "Nivel X"
+				filtro = Integer.parseInt(sel.substring(6));
+			} catch (NumberFormatException ex) {
+				// Es "Todos los niveles"
+				filtro = 0;
+			}
+		}
+		mRellenarTablaWorkouts(filtro);
+	}
+
+	public void mAbrirVideo(MouseEvent e) {
+		int colView = vistaWorkouts.getTableWorkouts().columnAtPoint(e.getPoint());
+		int rowView = vistaWorkouts.getTableWorkouts().rowAtPoint(e.getPoint());
+		if (colView == -1 || rowView == -1)
+			return;
+
+		int colModel = vistaWorkouts.getTableWorkouts().convertColumnIndexToModel(colView);
+		if (colModel == 5) {
+			int rowModel = vistaWorkouts.getTableWorkouts().convertRowIndexToModel(rowView);
+			Object urlCell = vistaWorkouts.getModeloWorkouts().getValueAt(rowModel, 4);
+			if (urlCell == null)
+				return;
+			String url = urlCell.toString().trim();
+			if (url.isEmpty())
+				return;
+
+			try {
+				Desktop.getDesktop().browse(new URI(url));
+
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 	public void mCargarEjercicios(Workout workout) {
+		if (workout == null)
+			return;
 		vistaWorkouts.getModeloEjercicios().setRowCount(0);
 		ArrayList<Ejercicio> ejerciciosArray = Ejercicio.mObtenerEjerciciosWorkout(workout);
+		workout.setEjercicios(ejerciciosArray);
 		for (int i = 0; i < ejerciciosArray.size(); i++) {
 			String[] fila = new String[6];
 			fila[0] = ejerciciosArray.get(i).getIdEjercicio();
@@ -255,6 +335,7 @@ public class ControladorInicio implements ActionListener, ListSelectionListener 
 		}
 		mMostrarOcultarEjercicios(true);
 	}
+
 	public void mMostrarOcultarEjercicios(boolean mostrar) {
 		vistaWorkouts.getTableEjercicios().setVisible(mostrar);
 		vistaWorkouts.getLblEventos().setVisible(mostrar);
@@ -274,13 +355,48 @@ public class ControladorInicio implements ActionListener, ListSelectionListener 
 		}
 		return null;
 	}
+
 	public void mDesconectar() {
 		vistaWorkouts.setVisible(false);
 		vistaInicio.setVisible(true);
 		vistaInicio.getPanelLogin().setVisible(true);
 		vistaInicio.getPanelRegistro().setVisible(false);
-		vistaInicio.getPanelLogin().getTextFieldEmail().setText("");
-		vistaInicio.getPanelLogin().getTextFieldPassword().setText("");
+		vistaInicio.getPanelLogin().vaciar();
 		usuario = new Usuario();
 	}
+
+	private boolean emailValido(String email) {
+		if (email == null)
+			return false;
+		if (email.contains(" "))
+			return false;
+		if (email.indexOf('@') != email.lastIndexOf('@'))
+			return false;
+
+		int at = email.indexOf('@');
+		if (at <= 0 || at == email.length() - 1)
+			return false;
+
+		String local = email.substring(0, at);
+		String domain = email.substring(at + 1);
+
+		if (local.length() == 0 || domain.length() == 0)
+			return false;
+		if (local.startsWith(".") || local.endsWith("."))
+			return false;
+		if (domain.startsWith(".") || domain.endsWith("."))
+			return false;
+		if (email.contains(".."))
+			return false;
+		if (!domain.contains("."))
+			return false;
+
+		for (char c : email.toCharArray()) {
+			if (c <= 32 || c == 127)
+				return false;
+		}
+
+		return true;
+	}
+
 }

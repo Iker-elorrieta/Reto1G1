@@ -8,6 +8,7 @@ import java.awt.RenderingHints;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import com.toedter.calendar.JDateChooser;
 
@@ -17,11 +18,13 @@ public class PanelRegistro extends JPanel {
 	private JTextField txtNombre;
 	private JTextField txtApellidos;
 	private JTextField txtEmail;
-	private JTextField txtContrasena;
-	//private JTextField txtFecNac;
+	private JPasswordField txtContrasena;
 	private JButton btnRegistrar;
 	private JButton btnAtras;
 	private JDateChooser dateChooser;
+	private JLabel lblError;
+	// content pane to group all components inside this panel
+	private JPanel contentPane;
 
 	
 	public PanelRegistro() {
@@ -30,6 +33,13 @@ public class PanelRegistro extends JPanel {
 		setBounds(38, 150, 374, 410);
 		setVisible(false);
 		setLayout(null);
+		
+		// create and configure content pane
+		contentPane = new JPanel();
+		contentPane.setOpaque(false);
+		contentPane.setLayout(null);
+		contentPane.setBounds(0, 0, 374, 410);
+		add(contentPane);
 		
 		// Título
 		JLabel lblRegistro = new JLabel("Registrarse") {
@@ -53,19 +63,19 @@ public class PanelRegistro extends JPanel {
 		lblRegistro.setOpaque(false);
 		lblRegistro.setHorizontalAlignment(JLabel.CENTER);
 		lblRegistro.setBounds(0, 0, 374, 43);
-		add(lblRegistro);
+		contentPane.add(lblRegistro);
 		
 		// Nombre
 		JLabel lblNombre = new JLabel("Nombre");
 		lblNombre.setFont(new Font("Raleway", Font.BOLD, 15));
 		lblNombre.setForeground(new Color(0, 0, 0));
 		lblNombre.setBounds(38, 55, 294, 14);
-		add(lblNombre);
+		contentPane.add(lblNombre);
 		
 		txtNombre = new JTextField();
 		txtNombre.setFont(new Font("Raleway", Font.PLAIN, 15));
 		txtNombre.setBounds(38, 75, 294, 30);
-		add(txtNombre);
+		contentPane.add(txtNombre);
 		txtNombre.setColumns(10);
 		
 		// Apellidos
@@ -73,12 +83,12 @@ public class PanelRegistro extends JPanel {
 		lblApellidos.setFont(new Font("Raleway", Font.BOLD, 15));
 		lblApellidos.setForeground(new Color(0, 0, 0));
 		lblApellidos.setBounds(38, 110, 294, 14);
-		add(lblApellidos);
+		contentPane.add(lblApellidos);
 		
 		txtApellidos = new JTextField();
 		txtApellidos.setFont(new Font("Raleway", Font.PLAIN, 15));
 		txtApellidos.setBounds(38, 130, 294, 30);
-		add(txtApellidos);
+		contentPane.add(txtApellidos);
 		txtApellidos.setColumns(10);
 		
 		// Email
@@ -86,12 +96,12 @@ public class PanelRegistro extends JPanel {
 		lblEmail.setFont(new Font("Raleway", Font.BOLD, 15));
 		lblEmail.setForeground(new Color(0, 0, 0));
 		lblEmail.setBounds(38, 165, 294, 14);
-		add(lblEmail);
+		contentPane.add(lblEmail);
 		
 		txtEmail = new JTextField();
 		txtEmail.setFont(new Font("Raleway", Font.PLAIN, 15));
 		txtEmail.setBounds(38, 185, 294, 30);
-		add(txtEmail);
+		contentPane.add(txtEmail);
 		txtEmail.setColumns(10);
 		
 		// Contraseña
@@ -99,12 +109,12 @@ public class PanelRegistro extends JPanel {
 		lblContrasena.setFont(new Font("Raleway", Font.BOLD, 15));
 		lblContrasena.setForeground(new Color(0, 0, 0));
 		lblContrasena.setBounds(38, 220, 294, 14);
-		add(lblContrasena);
+		contentPane.add(lblContrasena);
 		
-		txtContrasena = new JTextField();
+		txtContrasena = new JPasswordField();
 		txtContrasena.setFont(new Font("Raleway", Font.PLAIN, 15));
 		txtContrasena.setBounds(38, 240, 294, 30);
-		add(txtContrasena);
+		contentPane.add(txtContrasena);
 		txtContrasena.setColumns(10);
 		
 		// Fecha de nacimiento
@@ -112,12 +122,12 @@ public class PanelRegistro extends JPanel {
         lblFecNac.setFont(new Font("Raleway", Font.BOLD, 15));
         lblFecNac.setForeground(new Color(0, 0, 0));
         lblFecNac.setBounds(38, 275, 294, 14);
-        add(lblFecNac);
+        contentPane.add(lblFecNac);
 
         dateChooser = new JDateChooser();
         dateChooser.setBounds(38, 295, 294, 30);
         dateChooser.setFont(new Font("Raleway", Font.PLAIN, 15));
-        add(dateChooser);
+        contentPane.add(dateChooser);
 
 		
 		// Botón Registrar
@@ -126,7 +136,7 @@ public class PanelRegistro extends JPanel {
 		btnRegistrar.setForeground(new Color(255, 255, 255));
 		btnRegistrar.setBackground(new Color(0, 0, 0));
 		btnRegistrar.setBounds(38, 340, 140, 30);
-		add(btnRegistrar);
+		contentPane.add(btnRegistrar);
 		
 		// Botón Atrás
 		btnAtras = new JButton("Atrás");
@@ -134,7 +144,15 @@ public class PanelRegistro extends JPanel {
 		btnAtras.setForeground(new Color(255, 255, 255));
 		btnAtras.setBackground(new Color(100, 100, 100));
 		btnAtras.setBounds(192, 340, 140, 30);
-		add(btnAtras);
+		contentPane.add(btnAtras);
+		
+		lblError = new JLabel("");
+		lblError.setForeground(Color.RED);
+		lblError.setFont(new Font("Raleway", Font.BOLD, 11));
+		lblError.setBounds(38, 381, 294, 14);
+		contentPane.add(lblError);
+		
+		vaciar();
 	}
 	
 	@Override
@@ -144,6 +162,19 @@ public class PanelRegistro extends JPanel {
 		g2.setColor(getBackground());
 		g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
 		g2.dispose();
+	}
+	
+	public void vaciar() {
+		txtNombre.setText("");
+		txtApellidos.setText("");
+		txtEmail.setText("");
+		txtContrasena.setText("");
+		dateChooser.setDate(null);
+		Inicio.placeholder("Introduce tu nombre", Color.GRAY, txtNombre);
+		Inicio.placeholder("Introduce tus apellidos", Color.GRAY, txtApellidos);
+		Inicio.placeholder("Introduce tu correo electrónico", Color.GRAY, txtEmail);
+		Inicio.placeholder("********", Color.GRAY, txtContrasena);
+		Inicio.placeholder("Selecciona tu fecha de nacimiento", Color.GRAY,(JTextField) dateChooser.getDateEditor().getUiComponent());
 	}
 	
 	// Getters para los campos
@@ -174,5 +205,17 @@ public class PanelRegistro extends JPanel {
 	public JDateChooser getDateChooser() {
 	        return dateChooser;
 	}
+
+	public JLabel getLblError() {
+		return lblError;
+	}
+
+	public void setLblError(JLabel lblError) {
+		this.lblError = lblError;
+	}
 	
+	// Getter for contentPane if external access is needed
+	public JPanel getContentPane() {
+        return contentPane;
+    }
 }

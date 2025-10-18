@@ -83,6 +83,13 @@ public class Workout {
 	public void setVideo(String video) {
 		this.video = video;
 	}
+	public List<Ejercicio> getEjercicios() {
+		return ejercicios;
+	}
+
+	public void setEjercicios(List<Ejercicio> ejercicios) {
+		this.ejercicios = ejercicios;
+	}
 
 	/************** Metodo CRUD **************/
 

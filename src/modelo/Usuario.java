@@ -15,9 +15,9 @@ import com.google.cloud.firestore.Firestore;
 import conexion.Conexion;
 
 public class Usuario {
-	
+
 	/************** Atributos **************/
-	
+
 	private String IdUsuario;
 	private String nombre;
 	private String apellidos;
@@ -27,23 +27,24 @@ public class Usuario {
 	private int nivel;
 	private String tipo;
 	private List<UsuWorkout> workouts = new ArrayList<>();
-	
+
 	private static String collectionName = "usuarios";
 	private static String fieldNombre = "nombre";
-	private static String fieldApellidos = "apellidos"; 
-	private static String fieldEmail = "email"; 
-	private static String fieldContrasena = "contrasena"; 
-	private static String fieldFecNac = "fec_nac"; 
-	private static String fieldNivel = "nivel"; 
-	private static String fieldTipo = "tipo"; 
-	
+	private static String fieldApellidos = "apellidos";
+	private static String fieldEmail = "email";
+	private static String fieldContrasena = "contrasena";
+	private static String fieldFecNac = "fec_nac";
+	private static String fieldNivel = "nivel";
+	private static String fieldTipo = "tipo";
+
 	/************** Constructores **************/
-	
+
 	public Usuario() {
-		
+
 	}
 
-	public Usuario(String pNombre, String pApellidos, String pEmail, String pContrasena, Date pFec_nac, int pNivel, String pTipo) {
+	public Usuario(String pNombre, String pApellidos, String pEmail, String pContrasena, Date pFec_nac, int pNivel,
+			String pTipo) {
 		this.nombre = pNombre;
 		this.apellidos = pApellidos;
 		this.email = pEmail;
@@ -54,9 +55,9 @@ public class Usuario {
 	}
 
 	/************** Getters y Setters **************/
-	
+
 	public String getIdUsuario() {
-	    return IdUsuario;
+		return IdUsuario;
 	}
 
 	public void setIdUsuario(String IdUsuario) {
@@ -64,68 +65,75 @@ public class Usuario {
 	}
 
 	public String getNombre() {
-	    return nombre;
+		return nombre;
 	}
 
 	public void setNombre(String nombre) {
-	    this.nombre = nombre;
+		this.nombre = nombre;
 	}
 
 	public String getApellidos() {
-	    return apellidos;
+		return apellidos;
 	}
 
 	public void setApellidos(String apellidos) {
-	    this.apellidos = apellidos;
+		this.apellidos = apellidos;
 	}
 
 	public String getEmail() {
-	    return email;
+		return email;
 	}
 
 	public void setEmail(String email) {
-	    this.email = email;
+		this.email = email;
 	}
 
 	public String getContrasena() {
-	    return contrasena;
+		return contrasena;
 	}
 
 	public void setContrasena(String contrasena) {
-	    this.contrasena = contrasena;
+		this.contrasena = contrasena;
 	}
 
 	public Date getFec_nac() {
-	    return fec_nac;
+		return fec_nac;
 	}
 
 	public void setFec_nac(Date fec_nac) {
-	    this.fec_nac = fec_nac;
+		this.fec_nac = fec_nac;
 	}
 
 	public int getNivel() {
-	    return nivel;
+		return nivel;
 	}
 
 	public void setNivel(int nivel) {
-	    this.nivel = nivel;
+		this.nivel = nivel;
 	}
 
 	public String getTipo() {
-	    return tipo;
+		return tipo;
 	}
 
 	public void setTipo(String tipo) {
-	    this.tipo = tipo;
+		this.tipo = tipo;
 	}
 
-	
+	public List<UsuWorkout> getWorkouts() {
+		return workouts;
+	}
+
+	public void setWorkouts(List<UsuWorkout> workouts) {
+		this.workouts = workouts;
+	}
+
 	/************** Metodo CRUD **************/
-	
+
 	// ********** READ **********
 	public Usuario mObtenerUsuario(int idUsu) {
 		Firestore conexion = null;
-		
+
 		try {
 			conexion = Conexion.conectar();
 
@@ -151,122 +159,99 @@ public class Usuario {
 		return this;
 	}
 
-	
-	
+	public boolean mExisteUsuario(String email) throws Exception {
+		Firestore conexion = Conexion.conectar();
+		var query = conexion.collection(collectionName).whereEqualTo(fieldEmail, email).get().get();
+		if (!query.isEmpty()) {
+			conexion.close();
+			return true;
+		} else {
+			conexion.close();
+			return false;
+		}
+	}
+
 	// ********** CREATE **********
-	public boolean mAnadirUsuario() {
-	    Firestore conexion = null;
+	public void mAnadirUsuario() throws Exception {
 
-	    try {
-	        conexion = Conexion.conectar();
+		Firestore conexion = Conexion.conectar();
 
-	        // Obtener todos los IDs existentes
-	        var documentos = conexion.collection(collectionName).get().get();
+		// Obtener todos los IDs existentes
+		var documentos = conexion.collection(collectionName).get().get();
 
-	        int maxId = 0;
-	        for (var doc : documentos) {
-	            try {
-	                int idNum = Integer.parseInt(doc.getId());
-	                if (idNum > maxId) {
-	                    maxId = idNum;
-	                }
-	            } catch (NumberFormatException e) {
-	                // Ignorar si algún documento tiene un ID no numérico
-	            }
-	        }
+		int maxId = 0;
+		for (var doc : documentos) {
+			try {
+				int idNum = Integer.parseInt(doc.getId());
+				if (idNum > maxId) {
+					maxId = idNum;
+				}
+			} catch (NumberFormatException e) {
+				// Ignorar si algún documento tiene un ID no numérico
+			}
+		}
 
-	        int nuevoId = maxId + 1;
-	        Map<String, Object> nuevoUsuario = new HashMap<>();
-	        nuevoUsuario.put(fieldNombre, nombre);
-	        nuevoUsuario.put(fieldApellidos, apellidos);
-	        nuevoUsuario.put(fieldEmail, email);
-	        nuevoUsuario.put(fieldContrasena, contrasena);
-	        nuevoUsuario.put(fieldFecNac, fec_nac);
-	        nuevoUsuario.put(fieldNivel, nivel);
-	        nuevoUsuario.put(fieldTipo, tipo);
+		int nuevoId = maxId + 1;
+		Map<String, Object> nuevoUsuario = new HashMap<>();
+		nuevoUsuario.put(fieldNombre, nombre);
+		nuevoUsuario.put(fieldApellidos, apellidos);
+		nuevoUsuario.put(fieldEmail, email);
+		nuevoUsuario.put(fieldContrasena, contrasena);
+		nuevoUsuario.put(fieldFecNac, fec_nac);
+		nuevoUsuario.put(fieldNivel, nivel);
+		nuevoUsuario.put(fieldTipo, tipo);
 
-	        DocumentReference UsuarioRef = conexion.collection(collectionName).document(String.valueOf(nuevoId));
-	        UsuarioRef.set(nuevoUsuario).get();
+		DocumentReference UsuarioRef = conexion.collection(collectionName).document(String.valueOf(nuevoId));
+		UsuarioRef.set(nuevoUsuario).get();
 
-	        setIdUsuario(String.valueOf(nuevoId));
+		setIdUsuario(String.valueOf(nuevoId));
 
-	        conexion.close();
-	        return true;
-
-	    } catch (InterruptedException | ExecutionException e) {
-	        System.out.println("Error: Clase Usuario, metodo mAnadirUsuario");
-	        e.printStackTrace();
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-
-	    return false;
+		conexion.close();
 	}
-	
-	
+
 	// ********** UPDATE **********
-	public boolean mActualizarUsuario() {
-	    Firestore conexion = null;
+	public void mActualizarUsuario() throws Exception {
+		Firestore conexion = null;
 
-	    try {
-	        conexion = Conexion.conectar();
-	        Map<String, Object> usuarioActualizado = new HashMap<>();
-	        usuarioActualizado.put(fieldNombre, nombre);
-	        usuarioActualizado.put(fieldApellidos, apellidos);
-	        usuarioActualizado.put(fieldEmail, email);
-	        usuarioActualizado.put(fieldContrasena, contrasena);
-	        usuarioActualizado.put(fieldFecNac, fec_nac);
-	        usuarioActualizado.put(fieldNivel, nivel);
-	        usuarioActualizado.put(fieldTipo, tipo);
+		conexion = Conexion.conectar();
+		Map<String, Object> usuarioActualizado = new HashMap<>();
+		usuarioActualizado.put(fieldNombre, nombre);
+		usuarioActualizado.put(fieldApellidos, apellidos);
+		usuarioActualizado.put(fieldEmail, email);
+		usuarioActualizado.put(fieldContrasena, contrasena);
+		usuarioActualizado.put(fieldFecNac, fec_nac);
+		usuarioActualizado.put(fieldNivel, nivel);
+		usuarioActualizado.put(fieldTipo, tipo);
 
-	        
-	        DocumentReference usuarioRef = conexion.collection(collectionName).document(IdUsuario);
-	        usuarioRef.update(usuarioActualizado);
-	        conexion.close();
-	        return true;
+		DocumentReference usuarioRef = conexion.collection(collectionName).document(IdUsuario);
+		usuarioRef.update(usuarioActualizado);
+		conexion.close();
 
-	    } catch (InterruptedException | ExecutionException e) {
-			System.out.println("Error: Clase Usuario, metodo mActualizarUsuario");
-			e.printStackTrace();
-		} catch (IOException e) {
-	        e.printStackTrace();
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-
-	    return false;
-	}
-	
-
-	/************** LOGIN / VALIDAR USUARIO **************/	
-	public boolean validarLogin(String email, String contrasena) {
-	    try {
-	        Firestore conexion = Conexion.conectar();
-	        var query = conexion.collection(collectionName).whereEqualTo(fieldEmail, email).get().get();
-	        if (!query.isEmpty()) {
-	            var doc = query.getDocuments().get(0);
-	            String passBD = doc.getString(fieldContrasena);
-	            if (passBD.equals(contrasena)) {
-	                setIdUsuario(doc.getId());
-	                setNombre(doc.getString(fieldNombre));
-	                setApellidos(doc.getString(fieldApellidos));
-	                setEmail(doc.getString(fieldEmail));
-	                setContrasena(passBD);
-	                setFec_nac(doc.getDate(fieldFecNac));
-	                setNivel(doc.getLong(fieldNivel).intValue());
-	                setTipo(doc.getString(fieldTipo));
-	                conexion.close();
-	                return true;
-	            }
-	        }
-	        conexion.close();
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	    return false;
 	}
 
+	/************** LOGIN / VALIDAR USUARIO **************/
+	public boolean validarLogin(String email, String contrasena) throws Exception {
+		Firestore conexion = Conexion.conectar();
+		var query = conexion.collection(collectionName).whereEqualTo(fieldEmail, email).get().get();
+		if (!query.isEmpty()) {
+			var doc = query.getDocuments().get(0);
+			String passBD = doc.getString(fieldContrasena);
+			if (passBD.equals(contrasena)) {
+				setIdUsuario(doc.getId());
+				setNombre(doc.getString(fieldNombre));
+				setApellidos(doc.getString(fieldApellidos));
+				setEmail(doc.getString(fieldEmail));
+				setContrasena(passBD);
+				setFec_nac(doc.getDate(fieldFecNac));
+				setNivel(doc.getLong(fieldNivel).intValue());
+				setTipo(doc.getString(fieldTipo));
+				conexion.close();
+				return true;
+			}
+		}
+		conexion.close();
+
+		return false;
+	}
 
 }
