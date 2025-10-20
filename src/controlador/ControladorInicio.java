@@ -9,17 +9,21 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.toedter.calendar.JDateChooser;
 
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
+import modelo.modeloBackup.BackupManager;
+import modelo.modeloBackup.XMLHistorico;
 import vista.Inicio;
 import vista.Workouts;
 
@@ -181,6 +185,35 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				mCargarWorkouts();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
+				
+				try {
+			        // Crear lista con el usuario actual
+			        List<Usuario> listaUsuarios = new ArrayList<>();
+			        listaUsuarios.add(usuario);
+
+			        // Generar backups y XML
+			        BackupManager.guardarBackupUsuarios(listaUsuarios, "usuarios.dat");
+			        BackupManager.guardarBackupWorkouts(workouts, "workouts.dat");
+			        XMLHistorico.generarXML(workouts, "historico.xml");
+
+			        // DANIII ESTO ESTA AQUI POR EL MOMENTO pa comprobar que los archivos se han creado
+			        boolean usuariosOk = false;
+			        boolean workoutsOk = false;
+			        boolean xmlOk = false;
+
+			        usuariosOk = new java.io.File("usuarios.dat").exists();
+			        workoutsOk = new java.io.File("workouts.dat").exists();
+			        xmlOk = new java.io.File("historico.xml").exists();
+
+			        if (usuariosOk && workoutsOk && xmlOk) {
+			            JOptionPane.showMessageDialog(vistaWorkouts, "Backups y XML generados correctamente.");
+			        } else {
+			            JOptionPane.showMessageDialog(vistaWorkouts, "Error al generar backups.");
+			        }
+			    } catch (Exception ex) {
+			        System.out.println("Error al generar backups: " + ex.getMessage());
+			        ex.printStackTrace();
+			    }
 			} else {
 				vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
 				vistaInicio.getPanelLogin().getLblError().setText("Correo electrónico o contraseña incorrectos");

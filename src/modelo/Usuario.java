@@ -1,6 +1,7 @@
 package modelo;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +15,7 @@ import com.google.cloud.firestore.Firestore;
 
 import conexion.Conexion;
 
-public class Usuario {
+public class Usuario implements Serializable{
 
 	/************** Atributos **************/
 

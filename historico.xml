@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<workouts>
+    <workout nombre="Full Body Beginner"/>
+    <workout nombre="Yoga Flow"/>
+    <workout nombre="HIIT Cardio Blast"/>
+    <workout nombre="Core Crusher"/>
+    <workout nombre="Advanced Strength"/>
+</workouts>

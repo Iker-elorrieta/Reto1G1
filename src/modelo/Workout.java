@@ -1,6 +1,7 @@
 package modelo;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -13,7 +14,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 
 import conexion.Conexion;
 
-public class Workout {
+public class Workout implements Serializable{
 
 	/************** Atributos **************/
 	private String IdWorkout;
