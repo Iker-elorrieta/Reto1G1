@@ -26,6 +26,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 
 public class Workouts extends JFrame {
@@ -42,6 +44,7 @@ public class Workouts extends JFrame {
 	private JButton btnEmpezarWorkout;
 	private JButton btnHistoricoWorkouts;
 	private JButton btnDesconectar;
+	private JButton btnEditarPerfil;
 	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
 	private JComboBox<String> comboBox;
 
@@ -114,7 +117,7 @@ public class Workouts extends JFrame {
 		btnDesconectar.setBounds(10, 540, 284, 38);
 		panelIzquierda.add(btnDesconectar);
 
-		JButton btnEditarPerfil = new JButton("Editar perfil");
+		btnEditarPerfil = new JButton("Editar perfil");
 		btnEditarPerfil.setForeground(new Color(0, 0, 0));
 		btnEditarPerfil.setFont(fuenteBold);
 		btnEditarPerfil.setBackground(new Color(255, 255, 255));
@@ -313,6 +316,10 @@ public class Workouts extends JFrame {
 	public JButton getBtnDesconectar() {
 		return btnDesconectar;
 	}
+	
+	public JButton getBtnEditarPerfil() {
+	    return btnEditarPerfil;
+	}
 
 	public void setBtnDesconectar(JButton btnDesconectar) {
 		this.btnDesconectar = btnDesconectar;
@@ -333,6 +340,7 @@ public class Workouts extends JFrame {
 	public void setComboBox(JComboBox<String> comboBox) {
 		this.comboBox = comboBox;
 	}
+	
 	
 	
 }

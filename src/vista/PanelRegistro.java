@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import com.toedter.calendar.JDateChooser;
+import modelo.Usuario;
 
 public class PanelRegistro extends JPanel {
 	
@@ -23,8 +24,8 @@ public class PanelRegistro extends JPanel {
 	private JButton btnAtras;
 	private JDateChooser dateChooser;
 	private JLabel lblError;
-	// content pane to group all components inside this panel
 	private JPanel contentPane;
+	private boolean modoEdicion=false;
 
 	
 	public PanelRegistro() {
@@ -34,7 +35,7 @@ public class PanelRegistro extends JPanel {
 		setVisible(false);
 		setLayout(null);
 		
-		// create and configure content pane
+
 		contentPane = new JPanel();
 		contentPane.setOpaque(false);
 		contentPane.setLayout(null);
@@ -214,8 +215,46 @@ public class PanelRegistro extends JPanel {
 		this.lblError = lblError;
 	}
 	
-	// Getter for contentPane if external access is needed
+	
 	public JPanel getContentPane() {
         return contentPane;
     }
+	
+	public boolean isModoEdicion() {
+	    return modoEdicion;
+	}
+	
+	public void setModoEdicion(boolean modoEdicion, Usuario usuario) {
+	    this.modoEdicion = modoEdicion;
+
+	    JLabel lblRegistro = (JLabel) contentPane.getComponent(0); // Título "Registrarse"
+	    if (modoEdicion) {
+	        lblRegistro.setText("Editar perfil");
+	        btnRegistrar.setText("Guardar cambios");
+
+	        if (usuario != null) {
+	            txtNombre.grabFocus();
+	            txtNombre.setText(usuario.getNombre());
+	            txtApellidos.grabFocus();
+	            txtApellidos.setText(usuario.getApellidos());
+	            txtEmail.grabFocus();
+	            txtEmail.setText(usuario.getEmail());
+	            txtEmail.setEnabled(false); // No permitir cambiar email
+	            txtContrasena.grabFocus();
+	            txtContrasena.setText(usuario.getContrasena());
+	            dateChooser.getDateEditor().getUiComponent().grabFocus();
+	            dateChooser.setDate(usuario.getFec_nac());
+	            
+	       
+	            
+	      
+	        }
+
+	    } else {
+	        lblRegistro.setText("Registrarse");
+	        btnRegistrar.setText("Registrar");
+	        txtEmail.setEnabled(true);
+	        vaciar();
+	    }
+	}
 }

@@ -64,6 +64,10 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaWorkouts.getComboBox().setActionCommand("FILTRAR_NIVEL");
 		vistaWorkouts.getComboBox().addActionListener(this);
 		vistaWorkouts.getTableWorkouts().addMouseListener(this);
+		
+		
+		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
+		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
 
 	}
 
@@ -83,9 +87,13 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			break;
 
 		case "ATRAS":
-			vistaInicio.getPanelLogin().vaciar();
-			vistaInicio.getPanelRegistro().setVisible(false);
-			vistaInicio.getPanelLogin().setVisible(true);
+			if(vistaInicio.getPanelRegistro().isModoEdicion()) {
+				vistaInicio.setVisible(false);
+			}else {
+				vistaInicio.getPanelLogin().vaciar();
+				vistaInicio.getPanelRegistro().setVisible(false);
+				vistaInicio.getPanelLogin().setVisible(true);
+			}
 			break;
 		case "MOSTRAR_REGISTRO":
 			vistaInicio.getPanelRegistro().vaciar();
@@ -101,6 +109,9 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		case "WORKOUT_SELECCIONADO":
 			mCargarEjercicios(mWorkoutSeleccionado());
 			break;
+		case "EDITAR_PERFIL":
+		    mEditarPerfil();
+		    break;
 		default:
 			break;
 		}
@@ -223,6 +234,17 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			return;
 		}
 		try {
+			if (vistaInicio.getPanelRegistro().isModoEdicion()) {
+			    usuario.setNombre(nombre);
+			    usuario.setApellidos(apellidos);
+			    usuario.setContrasena(password);
+			    usuario.setFec_nac(fechaNacimiento);
+			    usuario.mActualizarUsuario(); // suponiendo que tienes este método
+
+			    vistaInicio.getPanelRegistro().setVisible(false);
+			    vistaWorkouts.setVisible(true);
+			    return;
+			}
 			if (usuario.mExisteUsuario(email)) {
 				vistaInicio.getPanelRegistro().getLblError().setForeground(Color.RED);
 				vistaInicio.getPanelRegistro().getLblError().setText("El correo electrónico ya está registrado");
@@ -397,6 +419,12 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		}
 
 		return true;
+	}
+	public void mEditarPerfil() {
+	    vistaInicio.getPanelRegistro().setModoEdicion(true, usuario);
+	    vistaInicio.getPanelLogin().setVisible(false);
+	    vistaInicio.getPanelRegistro().setVisible(true);
+	    vistaInicio.setVisible(true);
 	}
 
 }
