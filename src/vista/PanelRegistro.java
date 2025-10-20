@@ -218,7 +218,7 @@ public class PanelRegistro extends JPanel {
 	    JLabel lblRegistro = (JLabel) contentPane.getComponent(0); // Título "Registrarse"
 	    if (modoEdicion) {
 	        lblRegistro.setText("Editar perfil");
-	        btnRegistrar.setText("Guardar cambios");
+	        btnRegistrar.setText("Guardar");
 
 	        if (usuario != null) {
 	            txtNombre.grabFocus();
@@ -232,10 +232,7 @@ public class PanelRegistro extends JPanel {
 	            txtContrasena.setText(usuario.getContrasena());
 	            dateChooser.getDateEditor().getUiComponent().grabFocus();
 	            dateChooser.setDate(usuario.getFec_nac());
-	            
-	       
-	            
-	      
+	             	
 	        }
 
 	    } else {
