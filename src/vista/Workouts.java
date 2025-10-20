@@ -13,7 +13,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.geom.RoundRectangle2D;
-import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -28,7 +27,6 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-
 
 public class Workouts extends JFrame {
 
@@ -67,12 +65,8 @@ public class Workouts extends JFrame {
 			private static final long serialVersionUID = 1L;
 			private Image backgroundImage;
 			{
-				URL imgUrl = getClass().getResource("/fotos/fondo1.png");
-				if (imgUrl != null) {
-					backgroundImage = new ImageIcon(imgUrl).getImage();
-				} else {
-					backgroundImage = new ImageIcon("fotos/fondo1.png").getImage();
-				}
+				backgroundImage = new ImageIcon(Inicio.class.getResource("/fondo1.png")).getImage();
+
 				setOpaque(false); // keep transparent so rounded shape shows
 			}
 
@@ -126,7 +120,7 @@ public class Workouts extends JFrame {
 
 		JPanel panelLogo = new JPanel() {
 			private static final long serialVersionUID = 1L;
-			private Image backgroundImage = new ImageIcon("fotos/logo.png").getImage();
+			private Image backgroundImage = new ImageIcon(Inicio.class.getResource("/logo.png")).getImage();
 
 			@Override
 			protected void paintComponent(Graphics g) {
@@ -137,7 +131,7 @@ public class Workouts extends JFrame {
 		panelLogo.setBounds(30, 10, 230, 230);
 		panelLogo.setOpaque(false);
 		panelIzquierda.add(panelLogo);
-		
+
 		btnHistoricoWorkouts = new JButton("Historial de workouts");
 		btnHistoricoWorkouts.setForeground(Color.BLACK);
 		btnHistoricoWorkouts.setFont(fuenteBold);
@@ -147,7 +141,8 @@ public class Workouts extends JFrame {
 
 		// TABLA VIAJES
 
-		modeloWorkouts = new DefaultTableModel(new String[] { "ID", "Nivel", "Nombre", "Descripcion","URLVideo","Video" }, 0);
+		modeloWorkouts = new DefaultTableModel(
+				new String[] { "ID", "Nivel", "Nombre", "Descripcion", "URLVideo", "Video" }, 0);
 		tableWorkouts = new JTable(modeloWorkouts);
 		tableWorkouts.setFont(new Font("Raleway", Font.PLAIN, 15));
 		tableWorkouts.getTableHeader().setFont(new Font("Raleway", Font.PLAIN, 15));
@@ -217,7 +212,7 @@ public class Workouts extends JFrame {
 		btnEmpezarWorkout.setBackground(new Color(128, 255, 0));
 		btnEmpezarWorkout.setBounds(759, 341, 215, 38);
 		contentPane.add(btnEmpezarWorkout);
-		
+
 		comboBox = new JComboBox<String>();
 		comboBox.setModel(modeloComboBox);
 		comboBox.setFont(fuenteBold);
@@ -235,9 +230,7 @@ public class Workouts extends JFrame {
 		lblEjercicios.setFont(new Font("Raleway", Font.PLAIN, 30));
 		lblEjercicios.setBounds(327, 330, 139, 51);
 		contentPane.add(lblEjercicios);
-		
 
-	
 		tableEjercicios.setVisible(false);
 		lblEjercicios.setVisible(false);
 		btnEmpezarWorkout.setVisible(false);
@@ -340,7 +333,6 @@ public class Workouts extends JFrame {
 	public void setComboBox(JComboBox<String> comboBox) {
 		this.comboBox = comboBox;
 	}
-	
-	
+
 	
 }

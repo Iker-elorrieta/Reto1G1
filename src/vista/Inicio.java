@@ -33,9 +33,9 @@ public class Inicio extends JFrame {
 		setSize(450, 650);
 		setLocationRelativeTo(null);
 
-		contentPane = crearPanelconImagen("fotos/fondo1.png");
-		panelLogoGrande = crearPanelconImagen("fotos/logo.png");
-		panelLogoPequeno = crearPanelconImagen("fotos/logo.png");
+		contentPane = crearPanelconImagen("/fondo1.png");
+		panelLogoGrande = crearPanelconImagen("/logo.png");
+		panelLogoPequeno = crearPanelconImagen("/logo.png");
 		panelLogin = new PanelLogin();
 		panelRegistro = new PanelRegistro();
 
@@ -60,7 +60,7 @@ public class Inicio extends JFrame {
 	public static JPanel crearPanelconImagen(String rutaImagen) {
 		return new JPanel() {
 			private static final long serialVersionUID = 1L;
-			private Image backgroundImage = new ImageIcon(rutaImagen).getImage();
+			private Image backgroundImage = new ImageIcon(Inicio.class.getResource(rutaImagen)).getImage();
 
 			@Override
 			protected void paintComponent(Graphics g) {
@@ -71,7 +71,7 @@ public class Inicio extends JFrame {
 
 	}
 
-	public static void placeholder(String texto, Color color, JTextField textField) {
+	public void placeholder(String texto, Color color, JTextField textField) {
 		textField.setForeground(color);
 		textField.setText(texto);
 		textField.putClientProperty("placeholder", Boolean.TRUE);

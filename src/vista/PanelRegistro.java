@@ -153,7 +153,6 @@ public class PanelRegistro extends JPanel {
 		lblError.setBounds(38, 381, 294, 14);
 		contentPane.add(lblError);
 		
-		vaciar();
 	}
 	
 	@Override
@@ -165,18 +164,7 @@ public class PanelRegistro extends JPanel {
 		g2.dispose();
 	}
 	
-	public void vaciar() {
-		txtNombre.setText("");
-		txtApellidos.setText("");
-		txtEmail.setText("");
-		txtContrasena.setText("");
-		dateChooser.setDate(null);
-		Inicio.placeholder("Introduce tu nombre", Color.GRAY, txtNombre);
-		Inicio.placeholder("Introduce tus apellidos", Color.GRAY, txtApellidos);
-		Inicio.placeholder("Introduce tu correo electrónico", Color.GRAY, txtEmail);
-		Inicio.placeholder("********", Color.GRAY, txtContrasena);
-		Inicio.placeholder("Selecciona tu fecha de nacimiento", Color.GRAY,(JTextField) dateChooser.getDateEditor().getUiComponent());
-	}
+
 	
 	// Getters para los campos
 	public JTextField getTxtNombre() {

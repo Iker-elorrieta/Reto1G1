@@ -104,7 +104,6 @@ public class PanelLogin extends JPanel {
 
 		contentPane.add(lblError);
 		
-		vaciar();
 
 	}
 	
@@ -115,14 +114,6 @@ public class PanelLogin extends JPanel {
 		g2.setColor(getBackground());
 		g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
 		g2.dispose();
-	}
-	
-	public void vaciar() {
-		textField.setText("");
-		textFieldContrasena.setText("");
-		Inicio.placeholder("Introduce tu correo electrónico", Color.GRAY, textField);
-		Inicio.placeholder("********", Color.GRAY, textFieldContrasena);
-		lblError.setText("");
 	}
 	/************** Getters **************/
 	public JTextField getTextFieldEmail() {
