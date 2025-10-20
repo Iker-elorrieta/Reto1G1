@@ -64,10 +64,13 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaWorkouts.getComboBox().setActionCommand("FILTRAR_NIVEL");
 		vistaWorkouts.getComboBox().addActionListener(this);
 		vistaWorkouts.getTableWorkouts().addMouseListener(this);
-		
+				
 		
 		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
 		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
+
+		vVaciarLogin();
+		vVaciarRegistro();
 
 	}
 
@@ -90,13 +93,13 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			if(vistaInicio.getPanelRegistro().isModoEdicion()) {
 				vistaInicio.setVisible(false);
 			}else {
-				vistaInicio.getPanelLogin().vaciar();
+				vVaciarLogin();
 				vistaInicio.getPanelRegistro().setVisible(false);
 				vistaInicio.getPanelLogin().setVisible(true);
 			}
 			break;
 		case "MOSTRAR_REGISTRO":
-			vistaInicio.getPanelRegistro().vaciar();
+			vVaciarRegistro();
 			vistaInicio.getPanelLogin().setVisible(false);
 			vistaInicio.getPanelRegistro().setVisible(true);
 			break;
@@ -159,13 +162,13 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		boolean contrasenaPlaceholder = (boolean) txtContasena.getClientProperty("placeholder");
 
 		if (email.isEmpty() || emailPlaceholder) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, txtEmail);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtEmail);
 		}
 		if (contrasena.isEmpty() || contrasenaPlaceholder) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, txtContasena);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtContasena);
 		}
 		if (!email.isEmpty() && !emailPlaceholder && !emailValido(email)) {
-			Inicio.placeholder("Correo electrónico no válido", Color.RED, txtEmail);
+			vistaInicio.placeholder("Correo electrónico no válido", Color.RED, txtEmail);
 		}
 		if (email.isEmpty() || contrasena.isEmpty() || emailPlaceholder || contrasenaPlaceholder
 				|| !emailValido(email)) {
@@ -211,22 +214,22 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		boolean fechaPH = Boolean.TRUE.equals(dateField.getClientProperty("placeholder"));
 
 		if (nombre.isEmpty() || nombrePH) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, txtNombre);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtNombre);
 		}
 		if (apellidos.isEmpty() || apellidosPH) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, txtApellidos);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtApellidos);
 		}
 		if (email.isEmpty() || emailPH) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, txtEmail);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtEmail);
 		}
 		if (password.isEmpty() || passwordPH) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, txtContrasena);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtContrasena);
 		}
 		if (fechaNacimiento == null || fechaPH) {
-			Inicio.placeholder("Campo obligatorio", Color.RED, dateField);
+			vistaInicio.placeholder("Campo obligatorio", Color.RED, dateField);
 		}
 		if (!email.isEmpty() && !emailPH && !emailValido(email)) {
-			Inicio.placeholder("Correo electrónico no válido", Color.RED, txtEmail);
+			vistaInicio.placeholder("Correo electrónico no válido", Color.RED, txtEmail);
 		}
 
 		if (nombre.isEmpty() || apellidos.isEmpty() || email.isEmpty() || password.isEmpty() || fechaNacimiento == null
@@ -256,7 +259,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			nuevoUsuario.mAnadirUsuario();
 			vistaInicio.getPanelRegistro().setVisible(false);
 			vistaInicio.getPanelLogin().setVisible(true);
-			vistaInicio.getPanelLogin().vaciar();
+			vVaciarLogin();
 			vistaInicio.getPanelLogin().getLblError().setForeground(Color.BLACK);
 			vistaInicio.getPanelLogin().getLblError().setText("Registro exitoso. Por favor, inicia sesión.");
 		} catch (Exception e) {
@@ -383,7 +386,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaInicio.setVisible(true);
 		vistaInicio.getPanelLogin().setVisible(true);
 		vistaInicio.getPanelRegistro().setVisible(false);
-		vistaInicio.getPanelLogin().vaciar();
+		vVaciarLogin();
 		usuario = new Usuario();
 	}
 
@@ -425,6 +428,42 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	    vistaInicio.getPanelLogin().setVisible(false);
 	    vistaInicio.getPanelRegistro().setVisible(true);
 	    vistaInicio.setVisible(true);
+	}
+	public void vVaciarLogin() {
+		JTextField txtEmail = vistaInicio.getPanelLogin().getTextFieldEmail();
+		JTextField txtContrasena = vistaInicio.getPanelLogin().getTextFieldContrasena();
+
+		txtEmail.setText("");
+		txtContrasena.setText("");
+
+		vistaInicio.placeholder("Introduce tu correo electrónico", Color.GRAY, txtEmail);
+		vistaInicio.placeholder("********", Color.GRAY, txtContrasena);
+		vistaInicio.getPanelLogin().getLblError().setText("");
+
+	}
+
+	public void vVaciarRegistro() {
+		JTextField txtNombre = vistaInicio.getPanelRegistro().getTxtNombre();
+		JTextField txtApellidos = vistaInicio.getPanelRegistro().getTxtApellidos();
+		JTextField txtEmail = vistaInicio.getPanelRegistro().getTxtEmail();
+		JTextField txtContrasena = vistaInicio.getPanelRegistro().getTxtContrasena();
+		JDateChooser dateChooser = vistaInicio.getPanelRegistro().getDateChooser();
+		JTextField dateField = (JTextField) dateChooser.getDateEditor().getUiComponent();
+
+		txtNombre.setText("");
+		txtApellidos.setText("");
+		txtEmail.setText("");
+		txtContrasena.setText("");
+		dateChooser.setDate(null);
+
+		vistaInicio.placeholder("Introduce tu nombre", Color.GRAY, txtNombre);
+		vistaInicio.placeholder("Introduce tus apellidos", Color.GRAY, txtApellidos);
+		vistaInicio.placeholder("Introduce tu correo electrónico", Color.GRAY, txtEmail);
+		vistaInicio.placeholder("********", Color.GRAY, txtContrasena);
+		vistaInicio.placeholder("Selecciona tu fecha de nacimiento", Color.GRAY, dateField);
+
+		vistaInicio.getPanelRegistro().getLblError().setText("");
+
 	}
 
 }

@@ -242,7 +242,6 @@ public class PanelRegistro extends JPanel {
 	        lblRegistro.setText("Registrarse");
 	        btnRegistrar.setText("Registrar");
 	        txtEmail.setEnabled(true);
-	        vaciar();
 	    }
 	}
 }
