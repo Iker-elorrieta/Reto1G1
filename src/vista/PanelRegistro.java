@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import com.toedter.calendar.JDateChooser;
-import modelo.Usuario;
 
 public class PanelRegistro extends JPanel {
 	
@@ -25,7 +24,7 @@ public class PanelRegistro extends JPanel {
 	private JDateChooser dateChooser;
 	private JLabel lblError;
 	private JPanel contentPane;
-	private boolean modoEdicion=false;
+	private JLabel lblRegistro;
 
 	
 	public PanelRegistro() {
@@ -43,7 +42,7 @@ public class PanelRegistro extends JPanel {
 		add(contentPane);
 		
 		// Título
-		JLabel lblRegistro = new JLabel("Registrarse") {
+		lblRegistro = new JLabel("Registrarse") {
 			private static final long serialVersionUID = 1L;
 			
 			@Override
@@ -208,37 +207,14 @@ public class PanelRegistro extends JPanel {
         return contentPane;
     }
 	
-	public boolean isModoEdicion() {
-	    return modoEdicion;
+	public JLabel getLblRegistro() {
+		return lblRegistro;
+	}
+
+	public void setLblRegistro(JLabel lblRegistro) {
+		this.lblRegistro = lblRegistro;
 	}
 	
-	public void setModoEdicion(boolean modoEdicion, Usuario usuario) {
-	    this.modoEdicion = modoEdicion;
-
-	    JLabel lblRegistro = (JLabel) contentPane.getComponent(0); // Título "Registrarse"
-	    if (modoEdicion) {
-	        lblRegistro.setText("Editar perfil");
-	        btnRegistrar.setText("Guardar");
-
-	        if (usuario != null) {
-	            txtNombre.grabFocus();
-	            txtNombre.setText(usuario.getNombre());
-	            txtApellidos.grabFocus();
-	            txtApellidos.setText(usuario.getApellidos());
-	            txtEmail.grabFocus();
-	            txtEmail.setText(usuario.getEmail());
-	            txtEmail.setEnabled(false); // No permitir cambiar email
-	            txtContrasena.grabFocus();
-	            txtContrasena.setText(usuario.getContrasena());
-	            dateChooser.getDateEditor().getUiComponent().grabFocus();
-	            dateChooser.setDate(usuario.getFec_nac());
-	             	
-	        }
-
-	    } else {
-	        lblRegistro.setText("Registrarse");
-	        btnRegistrar.setText("Registrar");
-	        txtEmail.setEnabled(true);
-	    }
-	}
+	
+	
 }

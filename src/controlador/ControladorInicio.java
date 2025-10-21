@@ -9,21 +9,19 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.toedter.calendar.JDateChooser;
 
-import javax.swing.JOptionPane;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
-import modelo.modeloBackup.BackupManager;
-import modelo.modeloBackup.XMLHistorico;
 import vista.Inicio;
 import vista.Workouts;
 
@@ -68,8 +66,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaWorkouts.getComboBox().setActionCommand("FILTRAR_NIVEL");
 		vistaWorkouts.getComboBox().addActionListener(this);
 		vistaWorkouts.getTableWorkouts().addMouseListener(this);
-				
-		
+
 		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
 		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
 
@@ -94,16 +91,16 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			break;
 
 		case "ATRAS":
-			if(vistaInicio.getPanelRegistro().isModoEdicion()) {
+			if (usuario != null) {
 				vistaInicio.setVisible(false);
-			}else {
+			} else {
 				vVaciarLogin();
 				vistaInicio.getPanelRegistro().setVisible(false);
 				vistaInicio.getPanelLogin().setVisible(true);
 			}
 			break;
 		case "MOSTRAR_REGISTRO":
-			vVaciarRegistro();
+			vSetModoRegistro();
 			vistaInicio.getPanelLogin().setVisible(false);
 			vistaInicio.getPanelRegistro().setVisible(true);
 			break;
@@ -117,8 +114,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			mCargarEjercicios(mWorkoutSeleccionado());
 			break;
 		case "EDITAR_PERFIL":
-		    mEditarPerfil();
-		    break;
+			mEditarPerfil();
+			break;
 		default:
 			break;
 		}
@@ -185,7 +182,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				mCargarWorkouts();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
-				
+								
 				try {
 			        // Crear lista con el usuario actual
 			        List<Usuario> listaUsuarios = new ArrayList<>();
@@ -270,16 +267,16 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			return;
 		}
 		try {
-			if (vistaInicio.getPanelRegistro().isModoEdicion()) {
-			    usuario.setNombre(nombre);
-			    usuario.setApellidos(apellidos);
-			    usuario.setContrasena(password);
-			    usuario.setFec_nac(fechaNacimiento);
-			    usuario.mActualizarUsuario(); // suponiendo que tienes este método
+			if (usuario != null) {
+				usuario.setNombre(nombre);
+				usuario.setApellidos(apellidos);
+				usuario.setContrasena(password);
+				usuario.setFec_nac(fechaNacimiento);
+				usuario.mActualizarUsuario(); 
 
-			    vistaInicio.getPanelRegistro().setVisible(false);
-			    vistaWorkouts.setVisible(true);
-			    return;
+				vistaInicio.setVisible(false);
+				vistaWorkouts.setVisible(true);
+				return;
 			}
 			if (usuario.mExisteUsuario(email)) {
 				vistaInicio.getPanelRegistro().getLblError().setForeground(Color.RED);
@@ -456,12 +453,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		return true;
 	}
+
 	public void mEditarPerfil() {
-	    vistaInicio.getPanelRegistro().setModoEdicion(true, usuario);
-	    vistaInicio.getPanelLogin().setVisible(false);
-	    vistaInicio.getPanelRegistro().setVisible(true);
-	    vistaInicio.setVisible(true);
+		vSetModoRegistro();
+		vistaInicio.getPanelLogin().setVisible(false);
+		vistaInicio.getPanelRegistro().setVisible(true);
+		vistaInicio.setVisible(true);
 	}
+
 	public void vVaciarLogin() {
 		JTextField txtEmail = vistaInicio.getPanelLogin().getTextFieldEmail();
 		JTextField txtContrasena = vistaInicio.getPanelLogin().getTextFieldContrasena();
@@ -488,6 +487,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		txtEmail.setText("");
 		txtContrasena.setText("");
 		dateChooser.setDate(null);
+		txtEmail.setEnabled(true);
 
 		vistaInicio.placeholder("Introduce tu nombre", Color.GRAY, txtNombre);
 		vistaInicio.placeholder("Introduce tus apellidos", Color.GRAY, txtApellidos);
@@ -497,6 +497,36 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		vistaInicio.getPanelRegistro().getLblError().setText("");
 
+	}
+
+	public void vSetModoRegistro() {
+
+		JLabel lblRegistro = vistaInicio.getPanelRegistro().getLblRegistro();
+		JButton btnRegistrar = vistaInicio.getPanelRegistro().getBtnRegistrar();
+		if (usuario != null) {
+			lblRegistro.setText("Editar perfil");
+			btnRegistrar.setText("Guardar");
+			vVaciarRegistro();
+			vistaInicio.getPanelRegistro().getTxtNombre().setText(usuario.getNombre());
+			vistaInicio.getPanelRegistro().getTxtApellidos().setText(usuario.getApellidos());
+			vistaInicio.getPanelRegistro().getTxtEmail().setText(usuario.getEmail());
+			vistaInicio.getPanelRegistro().getTxtEmail().setEnabled(false); // No permitir cambiar email
+			vistaInicio.getPanelRegistro().getTxtContrasena().setText(usuario.getContrasena());
+			vistaInicio.getPanelRegistro().getDateChooser().setDate(usuario.getFec_nac());
+
+			vistaInicio.placeholder("Introduce tu nombre", Color.GRAY, vistaInicio.getPanelRegistro().getTxtNombre());
+			vistaInicio.placeholder("Introduce tus apellidos", Color.GRAY,
+					vistaInicio.getPanelRegistro().getTxtApellidos());
+			vistaInicio.placeholder("Introduce tu correo electrónico", Color.GRAY,
+					vistaInicio.getPanelRegistro().getTxtEmail());
+			vistaInicio.placeholder("********", Color.GRAY, vistaInicio.getPanelRegistro().getTxtContrasena());
+			vistaInicio.placeholder("Selecciona tu fecha de nacimiento", Color.GRAY,
+					(JTextField) vistaInicio.getPanelRegistro().getDateChooser().getDateEditor().getUiComponent());
+		} else {
+			vVaciarRegistro();
+			lblRegistro.setText("Registrarse");
+			btnRegistrar.setText("Registrar");
+		}
 	}
 
 }
