@@ -216,7 +216,7 @@ public class Workouts extends JFrame {
 		comboBox = new JComboBox<String>();
 		comboBox.setModel(modeloComboBox);
 		comboBox.setFont(fuenteBold);
-		comboBox.setBounds(759, 35, 215, 45);
+		comboBox.setBounds(759, 35, 215, 34);
 		contentPane.add(comboBox);
 
 		// LABELS

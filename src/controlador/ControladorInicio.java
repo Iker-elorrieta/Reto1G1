@@ -196,7 +196,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			        BackupManager.guardarBackupWorkouts(workouts, "workouts.dat");
 			        XMLHistorico.generarXML(workouts, "historico.xml");
 
-			        // DANIII ESTO ESTA AQUI POR EL MOMENTO pa comprobar que los archivos se han creado
+			        
 			        boolean usuariosOk = false;
 			        boolean workoutsOk = false;
 			        boolean xmlOk = false;
@@ -271,11 +271,11 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		}
 		try {
 			if (vistaInicio.getPanelRegistro().isModoEdicion()) {
-			    usuario.setNombre(nombre);
+			    usuario.setNombre(nombre); 
 			    usuario.setApellidos(apellidos);
 			    usuario.setContrasena(password);
 			    usuario.setFec_nac(fechaNacimiento);
-			    usuario.mActualizarUsuario(); // suponiendo que tienes este método
+			    usuario.mActualizarUsuario();
 
 			    vistaInicio.getPanelRegistro().setVisible(false);
 			    vistaWorkouts.setVisible(true);
