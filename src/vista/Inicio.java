@@ -72,49 +72,54 @@ public class Inicio extends JFrame {
 	}
 
 	public void placeholder(String texto, Color color, JTextField textField) {
-		textField.setForeground(color);
-		textField.setText(texto);
-		textField.putClientProperty("placeholder", Boolean.TRUE);
-		if (textField instanceof JPasswordField) {
-			((JPasswordField) textField).setEchoChar((char) 0);
-		}
-		FocusListener[] focusListeners = textField.getFocusListeners();
-		for (FocusListener listener : focusListeners) {
-			textField.removeFocusListener(listener);
-		}
-		textField.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				if (textField.getText().equals(texto)) {
-					textField.setText("");
-					textField.setForeground(Color.BLACK);
-					textField.putClientProperty("placeholder", Boolean.FALSE);
-					if (textField instanceof JPasswordField) {
-						((JPasswordField) textField).setEchoChar((char) '*');
-					}
-				}
-			}
+	    textField.setForeground(color);
+	    if (textField.getText().isEmpty()) {
+	        textField.setText(texto);
+	        textField.putClientProperty("placeholder", Boolean.TRUE);
+	        if (textField instanceof JPasswordField) {
+	            ((JPasswordField) textField).setEchoChar((char) 0);
+	        }
+	    } else {
+	        textField.putClientProperty("placeholder", Boolean.FALSE);
+	        if (textField instanceof JPasswordField) {
+	            ((JPasswordField) textField).setEchoChar((char) '*');
+	        }
+	    }
+	    FocusListener[] focusListeners = textField.getFocusListeners();
+	    for (FocusListener listener : focusListeners) {
+	        textField.removeFocusListener(listener);
+	    }
+	    textField.addFocusListener(new FocusAdapter() {
+	        @Override
+	        public void focusGained(FocusEvent e) {
+	            if (textField.getText().equals(texto)) {
+	                textField.setText("");
+	                textField.setForeground(Color.BLACK);
+	                textField.putClientProperty("placeholder", Boolean.FALSE);
+	                if (textField instanceof JPasswordField) {
+	                    ((JPasswordField) textField).setEchoChar((char) '*');
+	                }
+	            }
+	        }
 
-			@Override
-			public void focusLost(FocusEvent e) {
-				if (textField.getText().isEmpty()) {
-					textField.setForeground(color);
-					textField.setText(texto);
-					textField.putClientProperty("placeholder", Boolean.TRUE);
-					if (textField instanceof JPasswordField) {
-						((JPasswordField) textField).setEchoChar((char) 0);
-					}
-				} else {
-					textField.putClientProperty("placeholder", Boolean.FALSE);
-					if (textField instanceof JPasswordField) {
-						((JPasswordField) textField).setEchoChar((char) '*');
-					}
-
-				}
-			}
-		});
+	        @Override
+	        public void focusLost(FocusEvent e) {
+	            if (textField.getText().isEmpty()) {
+	                textField.setForeground(color);
+	                textField.setText(texto);
+	                textField.putClientProperty("placeholder", Boolean.TRUE);
+	                if (textField instanceof JPasswordField) {
+	                    ((JPasswordField) textField).setEchoChar((char) 0);
+	                }
+	            } else {
+	                textField.putClientProperty("placeholder", Boolean.FALSE);
+	                if (textField instanceof JPasswordField) {
+	                    ((JPasswordField) textField).setEchoChar((char) '*');
+	                }
+	            }
+	        }
+	    });
 	}
-
 	/************** Getters y Setters **************/
 	public PanelLogin getPanelLogin() {
 		return panelLogin;
