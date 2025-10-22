@@ -3,7 +3,6 @@ package modelo;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
@@ -16,6 +15,7 @@ public class UsuWorkout implements Serializable {
 	private int ejerciciosCompletados; // Cuántos ejercicios completó el usuario
 	private int tiempoTotal; // Tiempo total en segundos
 	private Date fecha; // Fecha en la que se completó el workout
+	
 
 	// Constructor de la clase
 	public UsuWorkout(Workout workout, int ejerciciosCompletados, int tiempoTotal, Date fecha) {

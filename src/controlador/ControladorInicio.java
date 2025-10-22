@@ -9,9 +9,11 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 
 import com.toedter.calendar.JDateChooser;
 
@@ -22,6 +24,7 @@ import javax.swing.JTextField;
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
+import modelo.Serie;
 import vista.HiloBackup;
 import vista.Inicio;
 import vista.Workouts;
@@ -33,12 +36,15 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 	private ArrayList<Workout> workouts;
 	private Usuario usuario;
+	private vista.HistoricoWorkouts vistaHistorico; 
+
 
 	// Constructor
 	public ControladorInicio(Inicio vistaInicio) {
 		this.vistaInicio = vistaInicio;
 		vistaWorkouts = new Workouts();
 		usuario = new Usuario();
+		vistaHistorico = new vista.HistoricoWorkouts();
 		inicializarControlador();
 	}
 
@@ -70,6 +76,15 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
 		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
+		
+		// HistrocioWorkouts
+		vistaWorkouts.getBtnHistoricoWorkouts().setActionCommand("HISTORICO_WORKOUTS");
+		vistaWorkouts.getBtnHistoricoWorkouts().addActionListener(this);
+		vistaHistorico.getBtnAtras().addActionListener(e -> {
+		    // hide historico and show the existing workouts view
+		    vistaHistorico.setVisible(false);
+		    vistaWorkouts.setVisible(true);
+		});
 
 		vVaciarLogin();
 		vVaciarRegistro();
@@ -117,6 +132,21 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		case "EDITAR_PERFIL":
 			mEditarPerfil();
 			break;
+		case "HISTORICO_WORKOUTS":
+		    mCargarEjercicios(mWorkoutSeleccionado());
+		    try {
+		        ArrayList<modelo.UsuWorkout> lista = modelo.UsuWorkout.mCargarHistorialWorkouts(usuario);
+		        // fill the workouts table in the historic view
+		        mRellenarTablaWorkoutsHistorico(0);
+		        // fill the historial details table (your existing method)
+		        mRellenarHistorico(lista);
+		        vistaHistorico.setVisible(true);
+		    } catch (Exception ex) {
+		        ex.printStackTrace();
+		        javax.swing.JOptionPane.showMessageDialog(vistaWorkouts,
+		            "Error al cargar el historial de workouts", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		    }
+		    break;
 		default:
 			break;
 		}
@@ -183,30 +213,6 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				mCargarWorkouts();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
-
-				/*
-				 * try { // Crear lista con el usuario actual List<Usuario> listaUsuarios = new
-				 * ArrayList<>(); listaUsuarios.add(usuario);
-				 * 
-				 * // Generar backups y XML BackupManager.guardarBackupUsuarios(listaUsuarios,
-				 * "usuarios.dat"); BackupManager.guardarBackupWorkouts(workouts,
-				 * "workouts.dat"); XMLHistorico.generarXML(workouts, "historico.xml");
-				 * 
-				 * 
-				 * boolean usuariosOk = false; boolean workoutsOk = false; boolean xmlOk =
-				 * false;
-				 * 
-				 * usuariosOk = new java.io.File("usuarios.dat").exists(); workoutsOk = new
-				 * java.io.File("workouts.dat").exists(); xmlOk = new
-				 * java.io.File("historico.xml").exists();
-				 * 
-				 * if (usuariosOk && workoutsOk && xmlOk) {
-				 * JOptionPane.showMessageDialog(vistaWorkouts,
-				 * "Backups y XML generados correctamente."); } else {
-				 * JOptionPane.showMessageDialog(vistaWorkouts, "Error al generar backups."); }
-				 * } catch (Exception ex) { System.out.println("Error al generar backups: " +
-				 * ex.getMessage()); ex.printStackTrace(); }
-				 */
 				iniciarBackup();
 			} else {
 				vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
@@ -309,25 +315,117 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		}
 	}
 
-	private void mRellenarTablaWorkouts(int filtroNivel) {
-		if (workouts == null)
-			return;
-		vistaWorkouts.getModeloWorkouts().setRowCount(0);
-		for (int i = 0; i < workouts.size(); i++) {
-			Workout w = workouts.get(i);
-			if (filtroNivel == 0 || w.getNivel() == filtroNivel) {
-				String[] fila = new String[6];
-				fila[0] = w.getIdWorkout();
-				fila[1] = w.getNivel() + "";
-				fila[2] = w.getNombre();
-				fila[3] = w.getDescripcion();
-				fila[4] = w.getVideo();
-				fila[5] = "Ver vídeo";
-				vistaWorkouts.getModeloWorkouts().addRow(fila);
-
+		private void mRellenarTablaWorkouts(int filtroNivel) {
+			if (workouts == null)
+				return;
+			vistaWorkouts.getModeloWorkouts().setRowCount(0);
+			for (int i = 0; i < workouts.size(); i++) {
+				Workout w = workouts.get(i);
+				if (filtroNivel == 0 || w.getNivel() == filtroNivel) {
+					String[] fila = new String[6];
+					fila[0] = w.getIdWorkout();
+					fila[1] = w.getNivel() + "";
+					fila[2] = w.getNombre();
+					fila[3] = w.getDescripcion();
+					fila[4] = w.getVideo();
+					fila[5] = "Ver vídeo";
+					vistaWorkouts.getModeloWorkouts().addRow(fila);
+	
+				}
 			}
+			mMostrarOcultarEjercicios(false);
 		}
-		mMostrarOcultarEjercicios(false);
+
+	// Helper to format seconds as mm:ss
+	private String formatSeconds(int secs) {
+		if (secs < 0) secs = 0;
+		return String.format("%02d:%02d", secs / 60, secs % 60);
+	}
+
+	// Fill historico table: name, nivel, tiempo total, tiempo previsto (series durations + descanso), fecha, % completado
+	private void mRellenarHistorico(ArrayList<modelo.UsuWorkout> lista) {
+		DefaultTableModel modelo = vistaHistorico.getModeloEjercicios();
+		modelo.setRowCount(0);
+		if (lista == null) return;
+
+		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+		for (modelo.UsuWorkout uw : lista) {
+			modelo.Workout w = uw.getWorkout();
+
+			String nombre;
+			if (w != null && w.getNombre() != null && !w.getNombre().isBlank()) {
+				nombre = w.getNombre();
+			} else if (w != null && w.getIdWorkout() != null) {
+				nombre = "Workout " + w.getIdWorkout();
+			} else {
+				nombre = "Desconocido";
+			}
+
+			String nivelStr = "Desconocido";
+			if (w != null) {
+				int nv = w.getNivel();
+				switch (nv) {
+				case 1:
+					nivelStr = "Principiante";
+					break;
+				case 2:
+					nivelStr = "Intermedio";
+					break;
+				case 3:
+					nivelStr = "Avanzado";
+					break;
+				default:
+					if (nv > 0) nivelStr = String.valueOf(nv);
+					break;
+				}
+			}
+
+			// tiempo total from user-workout (seconds)
+			int tiempoTotal = (uw != null) ? uw.getTiempoTotal() : 0;
+
+			// Load ejercicios+series to compute tiempo previsto (sum of series durations + descanso per exercise)
+			int tiempoPrevisto = 0;
+			if (w != null) {
+				try {
+					if (w.getEjercicios() == null || w.getEjercicios().isEmpty()) {
+						ArrayList<Ejercicio> eps = Ejercicio.mObtenerEjerciciosWorkout(w);
+						w.setEjercicios(eps);
+					}
+					if (w.getEjercicios() != null) {
+						for (Ejercicio e : w.getEjercicios()) {
+							// sum all series time
+							if (e.getSeries() != null) {
+								for (Serie s : e.getSeries()) {
+									tiempoPrevisto += s.getTiempo();
+								}
+							}
+							// add descanso once per exercise
+							tiempoPrevisto += e.getTiempoDescanso();
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
+
+			String fecha = (uw != null && uw.getFecha() != null) ? sdf.format(uw.getFecha()) : "Desconocida";
+
+			int porcentaje = 0;
+			if (w != null && w.getEjercicios() != null && w.getEjercicios().size() > 0) {
+				porcentaje = (int) Math.round((uw.getEjerciciosCompletados() * 100.0) / w.getEjercicios().size());
+			}
+
+			String[] fila = new String[6];
+			fila[0] = nombre;
+			fila[1] = nivelStr;
+			fila[2] = formatSeconds(tiempoTotal);
+			fila[3] = formatSeconds(tiempoPrevisto);
+			fila[4] = fecha;
+			fila[5] = porcentaje + "%";
+
+			modelo.addRow(fila);
+		}
 	}
 
 	public void mFiltrarNiveles() {
@@ -524,6 +622,25 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			lblRegistro.setText("Registrarse");
 			btnRegistrar.setText("Registrar");
 		}
+	}
+
+	private void mRellenarTablaWorkoutsHistorico(int filtroNivel) {
+	    if (workouts == null)
+	        return;
+	    vistaHistorico.getModeloWorkouts().setRowCount(0);
+	    for (int i = 0; i < workouts.size(); i++) {
+	        Workout w = workouts.get(i);
+	        if (filtroNivel == 0 || w.getNivel() == filtroNivel) {
+	            String[] fila = new String[6];
+	            fila[0] = w.getIdWorkout();
+	            fila[1] = String.valueOf(w.getNivel());
+	            fila[2] = w.getNombre();
+	            fila[3] = w.getDescripcion();
+	            fila[4] = w.getVideo();
+	            fila[5] = "Ver vídeo";
+	            vistaHistorico.getModeloWorkouts().addRow(fila);
+	        }
+	    }
 	}
 
 	public void iniciarBackup() {
