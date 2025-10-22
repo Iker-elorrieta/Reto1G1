@@ -9,7 +9,6 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -18,14 +17,12 @@ import com.toedter.calendar.JDateChooser;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
-import modelo.modeloBackup.BackupManager;
-import modelo.modeloBackup.XMLHistorico;
+import vista.HiloBackup;
 import vista.Inicio;
 import vista.Workouts;
 
@@ -95,7 +92,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			break;
 
 		case "ATRAS":
-			if (usuario != null) {
+			if (usuario.getEmail() != null) {
 				vistaInicio.setVisible(false);
 			} else {
 				vVaciarLogin();
@@ -186,35 +183,31 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				mCargarWorkouts();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
-								
-				/*try {
-			        // Crear lista con el usuario actual
-			        List<Usuario> listaUsuarios = new ArrayList<>();
-			        listaUsuarios.add(usuario);
 
-			        // Generar backups y XML
-			        BackupManager.guardarBackupUsuarios(listaUsuarios, "usuarios.dat");
-			        BackupManager.guardarBackupWorkouts(workouts, "workouts.dat");
-			        XMLHistorico.generarXML(workouts, "historico.xml");
-
-			        
-			        boolean usuariosOk = false;
-			        boolean workoutsOk = false;
-			        boolean xmlOk = false;
-
-			        usuariosOk = new java.io.File("usuarios.dat").exists();
-			        workoutsOk = new java.io.File("workouts.dat").exists();
-			        xmlOk = new java.io.File("historico.xml").exists();
-
-			        if (usuariosOk && workoutsOk && xmlOk) {
-			            JOptionPane.showMessageDialog(vistaWorkouts, "Backups y XML generados correctamente.");
-			        } else {
-			            JOptionPane.showMessageDialog(vistaWorkouts, "Error al generar backups.");
-			        }
-			    } catch (Exception ex) {
-			        System.out.println("Error al generar backups: " + ex.getMessage());
-			        ex.printStackTrace();
-			    }*/
+				/*
+				 * try { // Crear lista con el usuario actual List<Usuario> listaUsuarios = new
+				 * ArrayList<>(); listaUsuarios.add(usuario);
+				 * 
+				 * // Generar backups y XML BackupManager.guardarBackupUsuarios(listaUsuarios,
+				 * "usuarios.dat"); BackupManager.guardarBackupWorkouts(workouts,
+				 * "workouts.dat"); XMLHistorico.generarXML(workouts, "historico.xml");
+				 * 
+				 * 
+				 * boolean usuariosOk = false; boolean workoutsOk = false; boolean xmlOk =
+				 * false;
+				 * 
+				 * usuariosOk = new java.io.File("usuarios.dat").exists(); workoutsOk = new
+				 * java.io.File("workouts.dat").exists(); xmlOk = new
+				 * java.io.File("historico.xml").exists();
+				 * 
+				 * if (usuariosOk && workoutsOk && xmlOk) {
+				 * JOptionPane.showMessageDialog(vistaWorkouts,
+				 * "Backups y XML generados correctamente."); } else {
+				 * JOptionPane.showMessageDialog(vistaWorkouts, "Error al generar backups."); }
+				 * } catch (Exception ex) { System.out.println("Error al generar backups: " +
+				 * ex.getMessage()); ex.printStackTrace(); }
+				 */
+				iniciarBackup();
 			} else {
 				vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
 				vistaInicio.getPanelLogin().getLblError().setText("Correo electrónico o contraseña incorrectos");
@@ -271,12 +264,12 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			return;
 		}
 		try {
-			if (usuario != null) {
+			if (usuario.getEmail() != null) {
 				usuario.setNombre(nombre);
 				usuario.setApellidos(apellidos);
 				usuario.setContrasena(password);
 				usuario.setFec_nac(fechaNacimiento);
-				usuario.mActualizarUsuario(); 
+				usuario.mActualizarUsuario();
 
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
@@ -306,7 +299,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 	public void mCargarWorkouts() {
 		vistaWorkouts.getModeloWorkouts().setRowCount(0);
-		workouts = Workout.mObtenerWorkout(usuario.getNivel());
+		workouts = Workout.mObtenerWorkouts(usuario.getNivel());
 		mRellenarTablaWorkouts(0);
 
 		vistaWorkouts.getModeloComboBox().removeAllElements();
@@ -507,7 +500,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		JLabel lblRegistro = vistaInicio.getPanelRegistro().getLblRegistro();
 		JButton btnRegistrar = vistaInicio.getPanelRegistro().getBtnRegistrar();
-		if (usuario != null) {
+		if (usuario.getEmail() != null) {
 			lblRegistro.setText("Editar perfil");
 			btnRegistrar.setText("Guardar");
 			vVaciarRegistro();
@@ -531,6 +524,21 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			lblRegistro.setText("Registrarse");
 			btnRegistrar.setText("Registrar");
 		}
+	}
+
+	public void iniciarBackup() {
+		System.out.println(usuario.getNombre());
+		HiloBackup hiloBackup = new HiloBackup(usuario);
+		hiloBackup.start();
+		// CUANDO TERMINE EL HILO, MOSTRAR MENSAJE HAZLO
+
+		try {
+			hiloBackup.join(); // Esperar a que el hilo termine
+			System.out.println("Backups y XML generados correctamente.");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

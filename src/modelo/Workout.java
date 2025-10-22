@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -14,7 +15,7 @@ import com.google.cloud.firestore.QuerySnapshot;
 
 import conexion.Conexion;
 
-public class Workout implements Serializable{
+public class Workout implements Serializable {
 
 	/************** Atributos **************/
 	private String IdWorkout;
@@ -84,6 +85,7 @@ public class Workout implements Serializable{
 	public void setVideo(String video) {
 		this.video = video;
 	}
+
 	public List<Ejercicio> getEjercicios() {
 		return ejercicios;
 	}
@@ -95,23 +97,27 @@ public class Workout implements Serializable{
 	/************** Metodo CRUD **************/
 
 	// ********** READ **********
-	public Workout mObtenerWorkout(int nivel, int idWorkout) {
-		Firestore conexion = null;
-
+	public void mObtenerWorkout(int nivel, Firestore conexion) {
+		boolean cerrarConexion = false;
 		try {
-			conexion = Conexion.conectar();
+			if (conexion == null) {
+				cerrarConexion = true;
+				conexion = Conexion.conectar();
+			}
 
-			DocumentSnapshot workout = conexion.collection(collectionName).document(String.valueOf(idWorkout)).get()
-					.get();
+			DocumentSnapshot workout = conexion.collection(collectionName).document(String.valueOf(getIdWorkout()))
+					.get().get();
 			if (workout.getLong(fieldNivel).intValue() < nivel) {
-				return null;
+				return;
 			}
 			setIdWorkout(workout.getId());
 			setNombre(workout.getString(fieldNombre));
 			setDescripcion(workout.getString(fieldDescripcion));
 			setNivel(workout.getLong(fieldNivel).intValue());
 			setVideo(workout.getString(fieldVideo));
-			conexion.close();
+			if (cerrarConexion) {
+				conexion.close();
+			}
 		} catch (InterruptedException | ExecutionException e) {
 			System.out.println("Error: Clase Workout, metodo mObtenerWorkout");
 			e.printStackTrace();
@@ -123,10 +129,9 @@ public class Workout implements Serializable{
 			e.printStackTrace();
 		}
 
-		return this;
 	}
 
-	public static ArrayList<Workout> mObtenerWorkout(int nivel) {
+	public static ArrayList<Workout> mObtenerWorkouts(int nivel) {
 		Firestore conexion = null;
 
 		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();

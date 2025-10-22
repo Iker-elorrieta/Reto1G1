@@ -254,5 +254,10 @@ public class Usuario implements Serializable{
 
 		return false;
 	}
+	
+	public void mCargarHistorialWorkouts() throws Exception {
+		this.workouts = UsuWorkout.mCargarHistorialWorkouts(this);
+	}
+
 
 }
