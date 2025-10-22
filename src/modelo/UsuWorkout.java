@@ -1,69 +1,54 @@
 package modelo;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class UsuWorkout {
-	
-	/************** Atributos **************/
-	private String idHistorial;
-    private String idWorkout;
-    private int tiempoTotal; 
-    private Date fecha;
-    private double ejerciciosCompletados;
-    
-    /************** Constructores **************/
-    
-    public UsuWorkout() {
-    	
-    }
+public class UsuWorkout implements Serializable {
 
-    public UsuWorkout(String idHistorial, String idWorkout, int tiempoTotal, Date fecha, double ejerciciosCompletados) {
-        this.idHistorial = idHistorial;
-        this.idWorkout = idWorkout;
+    private Workout workout;  // Relación con el workout
+    private int ejerciciosCompletados;  // Cuántos ejercicios completó el usuario
+    private int tiempoTotal;  // Tiempo total en segundos
+    private Date fecha;  // Fecha en la que se completó el workout
+
+    // Constructor de la clase
+    public UsuWorkout(Workout workout, int ejerciciosCompletados, int tiempoTotal, Date fecha) {
+        this.workout = workout;
+        this.ejerciciosCompletados = ejerciciosCompletados;
         this.tiempoTotal = tiempoTotal;
         this.fecha = fecha;
+    }
+
+    // Getters
+    public Workout getWorkout() {
+        return workout;
+    }
+
+    public int getEjerciciosCompletados() {
+        return ejerciciosCompletados;
+    }
+
+    public int getTiempoTotal() {
+        return tiempoTotal;
+    }
+
+    public Date getFecha() {
+        return fecha;
+    }
+
+    // Setters
+    public void setWorkout(Workout workout) {
+        this.workout = workout;
+    }
+
+    public void setEjerciciosCompletados(int ejerciciosCompletados) {
         this.ejerciciosCompletados = ejerciciosCompletados;
     }
-    
-    /************** Getters y Setters **************/
-	public String getIdHistorial() {
-		return idHistorial;
-	}
 
-	public void setIdHistorial(String idHistorial) {
-		this.idHistorial = idHistorial;
-	}
+    public void setTiempoTotal(int tiempoTotal) {
+        this.tiempoTotal = tiempoTotal;
+    }
 
-	public String getIdWorkout() {
-		return idWorkout;
-	}
-
-	public void setIdWorkout(String idWorkout) {
-		this.idWorkout = idWorkout;
-	}
-
-	public int getTiempoTotal() {
-		return tiempoTotal;
-	}
-
-	public void setTiempoTotal(int tiempoTotal) {
-		this.tiempoTotal = tiempoTotal;
-	}
-
-	public Date getFecha() {
-		return fecha;
-	}
-
-	public void setFecha(Date fecha) {
-		this.fecha = fecha;
-	}
-
-	public double getEjerciciosCompletados() {
-		return ejerciciosCompletados;
-	}
-
-	public void setEjerciciosCompletados(double ejerciciosCompletados) {
-		this.ejerciciosCompletados = ejerciciosCompletados;
-	}
-
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
 }

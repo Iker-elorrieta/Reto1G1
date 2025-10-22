@@ -9,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -17,11 +18,14 @@ import com.toedter.calendar.JDateChooser;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
+import modelo.modeloBackup.BackupManager;
+import modelo.modeloBackup.XMLHistorico;
 import vista.Inicio;
 import vista.Workouts;
 
@@ -183,7 +187,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
 								
-				try {
+				/*try {
 			        // Crear lista con el usuario actual
 			        List<Usuario> listaUsuarios = new ArrayList<>();
 			        listaUsuarios.add(usuario);
@@ -210,7 +214,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			    } catch (Exception ex) {
 			        System.out.println("Error al generar backups: " + ex.getMessage());
 			        ex.printStackTrace();
-			    }
+			    }*/
 			} else {
 				vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
 				vistaInicio.getPanelLogin().getLblError().setText("Correo electrónico o contraseña incorrectos");
