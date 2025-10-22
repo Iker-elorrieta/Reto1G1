@@ -112,6 +112,9 @@ public class Ejercicio implements Serializable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		for (Ejercicio ej : listaDeEjercicios) {
+			ej.series = Serie.mObtenerSeriesEjercicio(workout,ej);
+		}
 
 		return listaDeEjercicios;
 	}

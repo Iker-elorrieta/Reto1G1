@@ -528,7 +528,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 	public void iniciarBackup() {
 		System.out.println(usuario.getNombre());
-		HiloBackup hiloBackup = new HiloBackup(usuario);
+		HiloBackup hiloBackup = new HiloBackup();
 		hiloBackup.start();
 		// CUANDO TERMINE EL HILO, MOSTRAR MENSAJE HAZLO
 

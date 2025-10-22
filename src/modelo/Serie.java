@@ -1,6 +1,19 @@
 package modelo;
 
-public class Serie {
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
+
+import conexion.Conexion;
+
+public class Serie implements Serializable {
 	
 	/************** Atributos **************/
 	private String IdSerie;
@@ -52,6 +65,44 @@ public class Serie {
 
 	public void setTiempo(int tiempo) {
 		this.tiempo = tiempo;
+	}
+	
+	public static List<Serie> mObtenerSeriesEjercicio(Workout workout,Ejercicio ejercicio) {
+		Firestore conexion = null;
+
+		ArrayList<Serie> listaSeries = new ArrayList<Serie>();
+
+		try {
+			conexion = Conexion.conectar();
+
+			ApiFuture<QuerySnapshot> query = conexion.collection("workouts").document(workout.getIdWorkout()).collection("ejercicios").document(ejercicio.getIdEjercicio()).collection("series").get();
+
+			QuerySnapshot querySnapshot = query.get();
+			List<QueryDocumentSnapshot> series = querySnapshot.getDocuments();
+			for (QueryDocumentSnapshot serie : series) {
+
+				Serie s = new Serie();
+				s.setIdSerie(serie.getId());
+				s.setNombre(serie.getString("nombre"));
+				s.setFoto(serie.getString("foto"));
+				s.setTiempo(serie.getLong("tiempo").intValue());		
+				listaSeries.add(s);
+			}
+			conexion.close();
+
+		} catch (InterruptedException | ExecutionException e) {
+			System.out.println("Error: Clase Workout, metodo mObtenerWorkout con arrayList");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+
+		return listaSeries;
 	}
     
     

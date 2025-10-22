@@ -258,6 +258,51 @@ public class Usuario implements Serializable{
 	public void mCargarHistorialWorkouts() throws Exception {
 		this.workouts = UsuWorkout.mCargarHistorialWorkouts(this);
 	}
+	
+	public static List<Usuario> mObtenerTodosUsuarios() {
+		List<Usuario> listaUsuarios = new ArrayList<>();
+		Firestore conexion = null;
+		try {
+			conexion = Conexion.conectar();
+
+			var query = conexion.collection(collectionName).get().get();
+			var documentos = query.getDocuments();
+
+			for (var doc : documentos) {
+				Usuario u = new Usuario();
+				u.setIdUsuario(doc.getId());
+				u.setNombre(doc.getString(fieldNombre));
+				u.setApellidos(doc.getString(fieldApellidos));
+				u.setEmail(doc.getString(fieldEmail));
+				u.setContrasena(doc.getString(fieldContrasena));
+				u.setFec_nac(doc.getDate(fieldFecNac));
+				u.setNivel(doc.getLong(fieldNivel).intValue());
+				u.setTipo(doc.getString(fieldTipo));
+				listaUsuarios.add(u);
+			}
+
+			conexion.close();
+		} catch (InterruptedException | ExecutionException e) {
+			System.out.println("Error: Clase Usuario, metodo mObtenerTodosUsuarios");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for(Usuario u : listaUsuarios) {
+			try {
+				u.mCargarHistorialWorkouts();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return listaUsuarios;
+	}
 
 
 }

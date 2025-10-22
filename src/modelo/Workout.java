@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -167,6 +166,43 @@ public class Workout implements Serializable {
 			e.printStackTrace();
 		}
 
+		return listaDeWorkouts;
+	}
+
+	public static ArrayList<Workout> mObtenerTodosWorkouts() {
+		Firestore conexion = null;
+		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();
+		try {
+			conexion = Conexion.conectar();
+
+			ApiFuture<QuerySnapshot> query = conexion.collection(collectionName).get();
+			QuerySnapshot querySnapshot = query.get();
+			List<QueryDocumentSnapshot> workouts = querySnapshot.getDocuments();
+			for (QueryDocumentSnapshot workout : workouts) {
+
+				Workout w = new Workout();
+				w.setIdWorkout(workout.getId());
+				w.setNombre(workout.getString(fieldNombre));
+				w.setDescripcion(workout.getString(fieldDescripcion));
+				w.setNivel(workout.getLong(fieldNivel).intValue());
+				w.setVideo(workout.getString(fieldVideo));
+				listaDeWorkouts.add(w);
+			}
+			conexion.close();
+
+		} catch (InterruptedException | ExecutionException e) {
+			System.out.println("Error: Clase Workout, metodo mObtenerWorkout con arrayList");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		for (Workout w : listaDeWorkouts) {
+			w.ejercicios = Ejercicio.mObtenerEjerciciosWorkout(w);
+		}
 		return listaDeWorkouts;
 	}
 
