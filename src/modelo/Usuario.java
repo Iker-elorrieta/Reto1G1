@@ -17,12 +17,10 @@ import conexion.Conexion;
 
 public class Usuario implements Serializable{
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	/************** Atributos **************/
 
+	private static final long serialVersionUID = 1L;
+
+	/************** Atributos **************/
 	private String IdUsuario;
 	private String nombre;
 	private String apellidos;
@@ -43,7 +41,6 @@ public class Usuario implements Serializable{
 	private static String fieldTipo = "tipo";
 
 	/************** Constructores **************/
-
 	public Usuario() {
 
 	}

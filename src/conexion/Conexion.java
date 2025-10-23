@@ -13,6 +13,9 @@ public class Conexion {
 	private static String nombreJSON = "GymSquad.json";
 	private static String IdDeProyecto = "dam2-r1-g1";
 	
+	/**
+	 * Conexta a Firestore 
+	 */
 	public static Firestore conectar() throws IOException {
 		FileInputStream serviceAccount;
 		Firestore firestore = null;

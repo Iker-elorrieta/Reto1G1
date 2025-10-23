@@ -11,9 +11,7 @@ import conexion.Conexion;
 
 public class UsuWorkout implements Serializable {
 
-	/**
-	 * 
-	 */
+	/************** Atributos **************/
 	private static final long serialVersionUID = 1L;
 	private Workout workout; // Relación con el workout
 	private int ejerciciosCompletados; // Cuántos ejercicios completó el usuario
@@ -21,7 +19,7 @@ public class UsuWorkout implements Serializable {
 	private Date fecha; // Fecha en la que se completó el workout
 	
 
-	// Constructor de la clase
+	/************** Constructores **************/
 	public UsuWorkout(Workout workout, int ejerciciosCompletados, int tiempoTotal, Date fecha) {
 		this.workout = workout;
 		this.ejerciciosCompletados = ejerciciosCompletados;
@@ -30,9 +28,10 @@ public class UsuWorkout implements Serializable {
 	}
 
 	public UsuWorkout() {
+		
 	}
 
-	// Getters
+	/************** Getters y Setters **************/
 	public Workout getWorkout() {
 		return workout;
 	}
@@ -49,7 +48,6 @@ public class UsuWorkout implements Serializable {
 		return fecha;
 	}
 
-	// Setters
 	public void setWorkout(Workout workout) {
 		this.workout = workout;
 	}
@@ -66,6 +64,7 @@ public class UsuWorkout implements Serializable {
 		this.fecha = fecha;
 	}
 
+	/************** Métodos **************/
 	public static ArrayList<UsuWorkout> mCargarHistorialWorkouts(Usuario usuario) throws Exception {
 		Firestore conexion = Conexion.conectar();
 		var query = conexion.collection("usuarios").document(usuario.getIdUsuario()).collection("workouts").get().get();
@@ -75,9 +74,7 @@ public class UsuWorkout implements Serializable {
 			Workout w = new Workout();
 			DocumentReference refWorkout = (DocumentReference) doc.getData().get("id_workout");
 			w.setIdWorkout(refWorkout.getId());
-			System.out.println("ID WORKOUT: " + w.getIdWorkout());
 			w.mObtenerWorkout(usuario.getNivel(),conexion);
-			System.out.println("WORKOUT OBTENIDO: " + w.getNombre());
 			uw.setWorkout(w);
 			uw.setEjerciciosCompletados(doc.getLong("ejercicioscompletados").intValue());
 			uw.setTiempoTotal(doc.getLong("tiempo_total").intValue());

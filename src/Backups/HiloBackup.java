@@ -1,4 +1,4 @@
-package backups;
+package Backups;
 
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
@@ -45,9 +45,9 @@ public class HiloBackup extends Thread {
 		}
 
 	}
-
+	
+	// Crear carpeta backups para usarios y workouts
 	private void backupBinario() throws Exception {
-
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("backups/usuarios.dat"))) {
 			oos.writeObject(usuarios);
 		}
@@ -55,7 +55,8 @@ public class HiloBackup extends Thread {
 			oos.writeObject(workouts);
 		}
 	}
-
+	
+	// Crear documento XML para el historial de workouts
 	private void historialXML() throws Exception {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();

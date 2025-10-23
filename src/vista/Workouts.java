@@ -45,7 +45,7 @@ public class Workouts extends JFrame {
 	private JComboBox<String> comboBox;
 
 	public Workouts() {
-		setTitle("Daji Squad Gym");
+		setTitle("Squad Gym - Workouts");
 		setResizable(false);
 		setBackground(Color.WHITE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -64,8 +64,7 @@ public class Workouts extends JFrame {
 			private Image backgroundImage;
 			{
 				backgroundImage = new ImageIcon(Inicio.class.getResource("/fondo1.png")).getImage();
-
-				setOpaque(false); // keep transparent so rounded shape shows
+				setOpaque(false); // hacer el panel transparente
 			}
 
 			@Override
@@ -75,20 +74,13 @@ public class Workouts extends JFrame {
 					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					int arc = 30;
 					RoundRectangle2D round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
-
-					// Clip to rounded rectangle so children are painted inside the rounded area
 					g2.setClip(round);
-
-					// Draw background image inside the clipped area
 					if (backgroundImage != null) {
 						g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 					} else {
-						// optional: fill with background color inside the rounded shape
 						g2.setColor(getBackground());
 						g2.fill(round);
 					}
-
-					// Paint children using the clipped Graphics2D
 					super.paintComponent(g2);
 				} finally {
 					g2.dispose();
@@ -137,8 +129,8 @@ public class Workouts extends JFrame {
 		btnHistoricoWorkouts.setBounds(10, 442, 284, 38);
 		panelIzquierda.add(btnHistoricoWorkouts);
 
-		// TABLA VIAJES
 
+		/************** TABLA WORKOUTS **************/
 		modeloWorkouts = new DefaultTableModel(
 				new String[] { "ID", "Nivel", "Nombre", "Descripcion", "URLVideo", "Video" }, 0);
 		tableWorkouts = new JTable(modeloWorkouts);
@@ -175,8 +167,7 @@ public class Workouts extends JFrame {
 		contentPane.add(scrollPaneWorkouts);
 		scrollPaneWorkouts.setViewportView(tableWorkouts);
 
-		// TABLA EVENTOS
-
+		/**************  TABLA EJERCICIOS **************/
 		modeloEjercicios = new DefaultTableModel(new String[] { "ID", "Nombre", "Descripción", "Descanso" }, 0);
 		tableEjercicios = new JTable(modeloEjercicios);
 		tableEjercicios.setFont(new Font("Raleway", Font.PLAIN, 15));
@@ -218,7 +209,6 @@ public class Workouts extends JFrame {
 		contentPane.add(comboBox);
 
 		// LABELS
-
 		JLabel lblWorkouts = new JLabel("Workouts");
 		lblWorkouts.setFont(new Font("Raleway", Font.PLAIN, 30));
 		lblWorkouts.setBounds(327, 29, 160, 51);

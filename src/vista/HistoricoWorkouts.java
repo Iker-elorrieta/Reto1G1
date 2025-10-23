@@ -34,9 +34,9 @@ public class HistoricoWorkouts extends JFrame {
 	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
 	private JTable table;
 	private JButton btnAtras;
-	
+
 	public HistoricoWorkouts() {
-		setTitle("Daji Squad Gym");
+		setTitle("Squad Gym - Historial Workouts");
 		setResizable(false);
 		setBackground(Color.WHITE);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,8 +55,7 @@ public class HistoricoWorkouts extends JFrame {
 			private Image backgroundImage;
 			{
 				backgroundImage = new ImageIcon(Inicio.class.getResource("/fondo1.png")).getImage();
-
-				setOpaque(false); // keep transparent so rounded shape shows
+				setOpaque(false); // hacer el panel transparente
 			}
 
 			@Override
@@ -66,20 +65,13 @@ public class HistoricoWorkouts extends JFrame {
 					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 					int arc = 30;
 					RoundRectangle2D round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
-
-					// Clip to rounded rectangle so children are painted inside the rounded area
 					g2.setClip(round);
-
-					// Draw background image inside the clipped area
 					if (backgroundImage != null) {
 						g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 					} else {
-						// optional: fill with background color inside the rounded shape
 						g2.setColor(getBackground());
 						g2.fill(round);
 					}
-
-					// Paint children using the clipped Graphics2D
 					super.paintComponent(g2);
 				} finally {
 					g2.dispose();
@@ -88,7 +80,7 @@ public class HistoricoWorkouts extends JFrame {
 		};
 
 		panelIzquierda.setBorder(null);
-		panelIzquierda.setBounds(10, 10, 304, 590);
+		panelIzquierda.setBounds(10, 10, 964, 194);
 		panelIzquierda.setLayout(null);
 		panelIzquierda.setOpaque(false);
 		contentPane.add(panelIzquierda);
@@ -103,34 +95,24 @@ public class HistoricoWorkouts extends JFrame {
 				g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 			}
 		};
-		panelLogo.setBounds(30, 10, 230, 230);
+		panelLogo.setBounds(30, 10, 170, 170);
 		panelLogo.setOpaque(false);
 		panelIzquierda.add(panelLogo);
-		
-		btnAtras = new JButton("ATRAS");
-		btnAtras.setForeground(Color.BLACK);
-		btnAtras.setFont(fuenteBold);
-		btnAtras.setBackground(Color.WHITE);
-		btnAtras.setBounds(10, 541, 284, 38);
-		panelIzquierda.add(btnAtras);
 
-	
-		// TABLA HISTORIAL WORKOUTS
+		JLabel lblWorkouts = new JLabel("Historial de workouts");
+		lblWorkouts.setForeground(new Color(255, 255, 255));
+		lblWorkouts.setBounds(227, 75, 647, 51);
+		panelIzquierda.add(lblWorkouts);
+		lblWorkouts.setFont(new Font("Raleway", Font.BOLD, 30));
 
+		/************** TABLA HISTORIAL WORKOUTS **************/
 		modeloEjercicios = new DefaultTableModel(new String[] { "ID", "Nombre", "Descripción", "Descanso" }, 0);
 		// Ordenar por fecha
 		TableRowSorter<TableModel> sortEjercicios = new TableRowSorter<>(modeloEjercicios);
 		sortEjercicios.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
 
-		// LABELS
-
-		JLabel lblWorkouts = new JLabel("Historial de workouts");
-		lblWorkouts.setFont(new Font("Raleway", Font.PLAIN, 30));
-		lblWorkouts.setBounds(327, 29, 647, 51);
-		contentPane.add(lblWorkouts);
-				
-		modeloEjercicios = new DefaultTableModel(
-		        new String[] { "Nombre Workout", "Nivel", "Tiempo Total", "Tiempo Previsto", "Fecha", "% Ejercicios Completados" }, 0);
+		modeloEjercicios = new DefaultTableModel(new String[] { "Nombre Workout", "Nivel", "Tiempo Total",
+				"Tiempo Previsto", "Fecha", "% Ejercicios Completados" }, 0);
 		table = new JTable(modeloEjercicios);
 		table.setFont(new Font("Raleway", Font.PLAIN, 15));
 		table.getTableHeader().setFont(new Font("Raleway", Font.BOLD, 15));
@@ -139,18 +121,22 @@ public class HistoricoWorkouts extends JFrame {
 		table.setDefaultEditor(Object.class, null);
 
 		JScrollPane scrollPaneHistorial = new JScrollPane();
-		scrollPaneHistorial.setBounds(324, 91, 650, 497);
+		scrollPaneHistorial.setBounds(10, 230, 964, 323);
 		scrollPaneHistorial.setViewportView(table);
 		contentPane.add(scrollPaneHistorial);
+
+		btnAtras = new JButton("Atrás");
+		btnAtras.setBounds(10, 564, 123, 38);
+		contentPane.add(btnAtras);
+		btnAtras.setForeground(Color.BLACK);
+		btnAtras.setFont(fuenteBold);
+		btnAtras.setBackground(Color.WHITE);
 	}
 
 	public static Color colorTexto(Color fondo) {
 		double iluminacion = (0.299 * fondo.getRed() + 0.587 * fondo.getGreen() + 0.114 * fondo.getBlue()) / 255;
 		return iluminacion < 0.5 ? Color.WHITE : Color.BLACK;
 	}
-	
-	
-
 
 	public DefaultTableModel getModeloEjercicios() {
 		return modeloEjercicios;
@@ -160,8 +146,6 @@ public class HistoricoWorkouts extends JFrame {
 		this.modeloEjercicios = modeloEjercicios;
 	}
 
-	
-
 	public DefaultComboBoxModel<String> getModeloComboBox() {
 		return modeloComboBox;
 	}
@@ -169,9 +153,9 @@ public class HistoricoWorkouts extends JFrame {
 	public void setModeloComboBox(DefaultComboBoxModel<String> modeloComboBox) {
 		this.modeloComboBox = modeloComboBox;
 	}
-	
+
 	public JButton getBtnAtras() {
-	    return btnAtras;
+		return btnAtras;
 	}
 
 }

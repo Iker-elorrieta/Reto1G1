@@ -27,7 +27,7 @@ public class Inicio extends JFrame {
 	 * Create the frame.
 	 */
 	public Inicio() {
-		setTitle("Daji Squad Gym");
+		setTitle("Squad Gym");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(450, 650);

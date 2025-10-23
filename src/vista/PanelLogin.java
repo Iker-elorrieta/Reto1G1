@@ -19,7 +19,6 @@ public class PanelLogin extends JPanel {
 	private JButton btnIniciarSesion;
 	private JLabel lblRegistrar;
 	private JLabel lblError;
-	// content pane to group all components inside this panel
 	private JPanel contentPane;
 	
 	public PanelLogin() {
@@ -28,8 +27,7 @@ public class PanelLogin extends JPanel {
 		setBounds(38, 150, 374, 295);
 		setVisible(false);
 		setLayout(null);
-		
-        // create and configure content pane
+
         contentPane = new JPanel();
         contentPane.setOpaque(false);
         contentPane.setLayout(null);
@@ -140,7 +138,6 @@ public class PanelLogin extends JPanel {
 		return lblRegistrar;
 	}
 
-	// Getter for contentPane if external access is needed
 	public JPanel getContentPane() {
 		return contentPane;
 	}
