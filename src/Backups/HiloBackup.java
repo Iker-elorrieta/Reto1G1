@@ -19,7 +19,8 @@ public class HiloBackup extends Thread {
 			ProcessBuilder pb = new ProcessBuilder("java", "Backups.ProcesoBackup");
 			pb.directory(new File("target/classes"));
 			Process proces = pb.start();
-			label.setText("Backup finalizado correctamente. ("+ proces.waitFor()+" )");
+			int exitCode = proces.waitFor();
+			label.setText("Backup finalizado correctamente. ("+ exitCode+")");
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 			label.setText("Backup finalizado con error.");
