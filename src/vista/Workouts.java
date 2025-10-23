@@ -25,6 +25,8 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class Workouts extends JFrame {
 
@@ -198,6 +200,12 @@ public class Workouts extends JFrame {
 		scrollPaneEjercicios.setViewportView(tableEjercicios);
 		scrollPaneEjercicios.getViewport().setBackground(Color.WHITE);
 		btnEmpezarWorkout = new JButton("Empezar workout");
+		btnEmpezarWorkout.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				
+			}
+		});
 		btnEmpezarWorkout.setForeground(Color.BLACK);
 		btnEmpezarWorkout.setFont(fuenteBold);
 		btnEmpezarWorkout.setBackground(new Color(128, 255, 0));

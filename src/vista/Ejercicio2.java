@@ -12,7 +12,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.border.LineBorder;
 import javax.swing.JLabel;
 
-public class Ejercicio extends JFrame {
+public class Ejercicio2 extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -24,7 +24,7 @@ public class Ejercicio extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Ejercicio frame = new Ejercicio();
+					Ejercicio2 frame = new Ejercicio2();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -36,7 +36,7 @@ public class Ejercicio extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public Ejercicio() {
+	public Ejercicio2() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 807, 538);
 		contentPane = new JPanel();
