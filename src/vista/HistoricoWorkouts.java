@@ -1,6 +1,5 @@
 package vista;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.swing.JFrame;
@@ -24,16 +23,13 @@ import javax.swing.SortOrder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 
 public class HistoricoWorkouts extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	private DefaultTableModel modeloWorkouts;
 	private DefaultTableModel modeloEjercicios;
-	private JTable tableWorkouts;
 	private Font fuenteBold = new Font("Raleway", Font.BOLD, 20);
 	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
 	private JTable table;
@@ -113,50 +109,13 @@ public class HistoricoWorkouts extends JFrame {
 		
 		btnAtras = new JButton("ATRAS");
 		btnAtras.setForeground(Color.BLACK);
-		btnAtras.setFont(new Font("Dialog", Font.BOLD, 20));
+		btnAtras.setFont(fuenteBold);
 		btnAtras.setBackground(Color.WHITE);
 		btnAtras.setBounds(10, 541, 284, 38);
 		panelIzquierda.add(btnAtras);
 
-		// TABLA VIAJES
-
-		modeloWorkouts = new DefaultTableModel(
-				new String[] { "ID", "Nivel", "Nombre", "Descripcion", "URLVideo", "Video" }, 0);
-		tableWorkouts = new JTable(modeloWorkouts);
-		tableWorkouts.setFont(new Font("Raleway", Font.PLAIN, 15));
-		tableWorkouts.getTableHeader().setFont(new Font("Raleway", Font.PLAIN, 15));
-		tableWorkouts.setRowHeight(25);
-		// Desactivar ediciones
-		tableWorkouts.setDefaultEditor(Object.class, null);
-		// Ocultar columna ViajeID
-		tableWorkouts.getColumnModel().getColumn(0).setMinWidth(0);
-		tableWorkouts.getColumnModel().getColumn(0).setMaxWidth(0);
-		// Mostrar nivel corto
-		tableWorkouts.getColumnModel().getColumn(1).setMinWidth(60);
-		tableWorkouts.getColumnModel().getColumn(1).setMaxWidth(60);
-		// Ocultar columna URLVIDEO
-		tableWorkouts.getColumnModel().getColumn(4).setMinWidth(0);
-		tableWorkouts.getColumnModel().getColumn(4).setMaxWidth(0);
-		// Mostrar columna ver video corta
-		tableWorkouts.getColumnModel().getColumn(5).setMinWidth(80);
-		tableWorkouts.getColumnModel().getColumn(5).setMaxWidth(80);
-		// Mostrar nombre corto
-		tableWorkouts.getColumnModel().getColumn(2).setMinWidth(150);
-		tableWorkouts.getColumnModel().getColumn(2).setMaxWidth(150);
-		// Desactivar mover columnas
-		tableWorkouts.getTableHeader().setReorderingAllowed(false);
-		// Ordenar por fecha de inicio
-		TableRowSorter<TableModel> sort = new TableRowSorter<>(modeloWorkouts);
-		tableWorkouts.setRowSorter(sort);
-		sort.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
-
-		JScrollPane scrollPaneWorkouts = new JScrollPane();
-		scrollPaneWorkouts.setBounds(324, 91, 650, 208);
-		scrollPaneWorkouts.getViewport().setBackground(Color.WHITE);
-		contentPane.add(scrollPaneWorkouts);
-		scrollPaneWorkouts.setViewportView(tableWorkouts);
-
-		// TABLA EVENTOS
+	
+		// TABLA HISTORIAL WORKOUTS
 
 		modeloEjercicios = new DefaultTableModel(new String[] { "ID", "Nombre", "Descripción", "Descanso" }, 0);
 		// Ordenar por fecha
@@ -165,9 +124,9 @@ public class HistoricoWorkouts extends JFrame {
 
 		// LABELS
 
-		JLabel lblWorkouts = new JLabel("Workouts");
+		JLabel lblWorkouts = new JLabel("Historial de workouts");
 		lblWorkouts.setFont(new Font("Raleway", Font.PLAIN, 30));
-		lblWorkouts.setBounds(327, 29, 160, 51);
+		lblWorkouts.setBounds(327, 29, 647, 51);
 		contentPane.add(lblWorkouts);
 				
 		modeloEjercicios = new DefaultTableModel(
@@ -180,7 +139,7 @@ public class HistoricoWorkouts extends JFrame {
 		table.setDefaultEditor(Object.class, null);
 
 		JScrollPane scrollPaneHistorial = new JScrollPane();
-		scrollPaneHistorial.setBounds(324, 344, 650, 234);
+		scrollPaneHistorial.setBounds(324, 91, 650, 497);
 		scrollPaneHistorial.setViewportView(table);
 		contentPane.add(scrollPaneHistorial);
 	}
@@ -192,13 +151,6 @@ public class HistoricoWorkouts extends JFrame {
 	
 	
 
-	public DefaultTableModel getModeloWorkouts() {
-		return modeloWorkouts;
-	}
-
-	public void setModeloWorkouts(DefaultTableModel modeloWorkouts) {
-		this.modeloWorkouts = modeloWorkouts;
-	}
 
 	public DefaultTableModel getModeloEjercicios() {
 		return modeloEjercicios;
@@ -208,13 +160,7 @@ public class HistoricoWorkouts extends JFrame {
 		this.modeloEjercicios = modeloEjercicios;
 	}
 
-	public JTable getTableWorkouts() {
-		return tableWorkouts;
-	}
-
-	public void setTableWorkouts(JTable tableWorkouts) {
-		this.tableWorkouts = tableWorkouts;
-	}
+	
 
 	public DefaultComboBoxModel<String> getModeloComboBox() {
 		return modeloComboBox;

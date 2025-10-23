@@ -11,6 +11,10 @@ import conexion.Conexion;
 
 public class UsuWorkout implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Workout workout; // Relación con el workout
 	private int ejerciciosCompletados; // Cuántos ejercicios completó el usuario
 	private int tiempoTotal; // Tiempo total en segundos
@@ -71,7 +75,9 @@ public class UsuWorkout implements Serializable {
 			Workout w = new Workout();
 			DocumentReference refWorkout = (DocumentReference) doc.getData().get("id_workout");
 			w.setIdWorkout(refWorkout.getId());
+			System.out.println("ID WORKOUT: " + w.getIdWorkout());
 			w.mObtenerWorkout(usuario.getNivel(),conexion);
+			System.out.println("WORKOUT OBTENIDO: " + w.getNombre());
 			uw.setWorkout(w);
 			uw.setEjerciciosCompletados(doc.getLong("ejercicioscompletados").intValue());
 			uw.setTiempoTotal(doc.getLong("tiempo_total").intValue());

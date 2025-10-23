@@ -16,6 +16,10 @@ import conexion.Conexion;
 
 public class Workout implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/************** Atributos **************/
 	private String IdWorkout;
 	private String nombre;
@@ -106,7 +110,7 @@ public class Workout implements Serializable {
 
 			DocumentSnapshot workout = conexion.collection(collectionName).document(String.valueOf(getIdWorkout()))
 					.get().get();
-			if (workout.getLong(fieldNivel).intValue() < nivel) {
+			if (workout.getLong(fieldNivel).intValue() > nivel) {
 				return;
 			}
 			setIdWorkout(workout.getId());
@@ -127,6 +131,8 @@ public class Workout implements Serializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		setEjercicios(Ejercicio.mObtenerEjerciciosWorkout(this));
+		return;
 
 	}
 

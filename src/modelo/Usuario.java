@@ -17,6 +17,10 @@ import conexion.Conexion;
 
 public class Usuario implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/************** Atributos **************/
 
 	private String IdUsuario;

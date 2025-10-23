@@ -15,6 +15,10 @@ import conexion.Conexion;
 
 public class Ejercicio implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/************** Atributos **************/
 	private String idEjercicio;
     private String nombre;
