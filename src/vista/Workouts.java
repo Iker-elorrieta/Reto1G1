@@ -43,6 +43,7 @@ public class Workouts extends JFrame {
 	private JButton btnEditarPerfil;
 	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
 	private JComboBox<String> comboBox;
+	private JLabel lblBackups;
 
 	public Workouts() {
 		setTitle("Squad Gym - Workouts");
@@ -128,6 +129,7 @@ public class Workouts extends JFrame {
 		btnHistoricoWorkouts.setBackground(Color.WHITE);
 		btnHistoricoWorkouts.setBounds(10, 442, 284, 38);
 		panelIzquierda.add(btnHistoricoWorkouts);
+		
 
 
 		/************** TABLA WORKOUTS **************/
@@ -213,6 +215,12 @@ public class Workouts extends JFrame {
 		lblWorkouts.setFont(new Font("Raleway", Font.PLAIN, 30));
 		lblWorkouts.setBounds(327, 29, 160, 51);
 		contentPane.add(lblWorkouts);
+		
+		lblBackups = new JLabel("");
+		lblBackups.setForeground(new Color(128, 255, 0));
+		lblBackups.setBounds(10, 417, 284, 14);
+		lblBackups.setFont(new Font("Raleway", Font.BOLD, 15));
+		panelIzquierda.add(lblBackups);
 
 		lblEjercicios = new JLabel("Ejercicios");
 		lblEjercicios.setFont(new Font("Raleway", Font.PLAIN, 30));
@@ -270,6 +278,14 @@ public class Workouts extends JFrame {
 		this.lblEjercicios = lblEventos;
 	}
 
+	public JLabel getLblBackups() {
+		return lblBackups;
+	}
+
+	public void setLblBackups(JLabel lblBackups) {
+		this.lblBackups = lblBackups;
+	}
+
 	public JScrollPane getScrollPaneEventos() {
 		return scrollPaneEjercicios;
 	}
@@ -321,6 +337,4 @@ public class Workouts extends JFrame {
 	public void setComboBox(JComboBox<String> comboBox) {
 		this.comboBox = comboBox;
 	}
-
-	
 }

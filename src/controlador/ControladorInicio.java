@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,9 +17,10 @@ import javax.swing.table.DefaultTableModel;
 
 import com.toedter.calendar.JDateChooser;
 
+import Backups.HiloBackup;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import modelo.Ejercicio;
@@ -149,8 +148,6 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				vistaHistorico.setVisible(true);
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				JOptionPane.showMessageDialog(vistaWorkouts, "Error al cargar el historial de workouts", "Error",
-						JOptionPane.ERROR_MESSAGE);
 			}
 			break;
 		default:
@@ -674,17 +671,9 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	 * según si hay un usuario activo.
 	 */
 	public void iniciarBackup() {
-		try {
-			ProcessBuilder pb = new ProcessBuilder("java", "Backups.ProcesoBackup");
-			pb.directory(new File("target/classes"));
-			Process proces = pb.start();
-			int exitCode = proces.waitFor();
-			System.out.println("Backups completados con código: " + exitCode);
-		} catch (IOException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Proceso Backup no iniciado correctamente.");
-			e.printStackTrace();
-		}
-
+		HiloBackup hiloBackup = new HiloBackup(vistaWorkouts.getLblBackups());
+		hiloBackup.start();
 	}
+
+
 }
