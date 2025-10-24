@@ -25,6 +25,7 @@ public class Ejercicio implements Serializable{
     private String descripcion;
     private int tiempoDescanso; // segundos
     private List<Serie> series = new ArrayList<>();
+    private boolean actual;
     
 	/************** Constructores **************/
     
@@ -37,6 +38,7 @@ public class Ejercicio implements Serializable{
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.tiempoDescanso = tiempoDescanso;
+        this.actual = false;
     }
     
     /************** Getters y Setters **************/
@@ -79,7 +81,16 @@ public class Ejercicio implements Serializable{
 	public void setSeries(List<Serie> series) {
 		this.series = series;
 	}
+	
     
+	public boolean isActual() {
+		return actual;
+	}
+
+	public void setActual(boolean actual) {
+		this.actual = actual;
+	}
+
 	public static ArrayList<Ejercicio> mObtenerEjerciciosWorkout(Workout workout) {
 		Firestore conexion = null;
 

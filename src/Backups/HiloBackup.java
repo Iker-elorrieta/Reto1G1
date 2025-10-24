@@ -25,6 +25,7 @@ public class HiloBackup extends Thread {
 			ProcessBuilder pb = new ProcessBuilder("java", "-jar", "backups.jar");
 			pb.directory(new File("."));
 			Process proces = pb.start();
+			pb.redirectErrorStream(true);
 			int exitCode = proces.waitFor();
 
 			// Finalizado

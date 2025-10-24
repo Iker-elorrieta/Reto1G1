@@ -30,6 +30,7 @@ import modelo.Serie;
 import modelo.UsuWorkout;
 import vista.HistoricoWorkouts;
 import vista.Inicio;
+import vista.PantallaEjercicio;
 import vista.Workouts;
 
 public class ControladorInicio extends MouseAdapter implements ActionListener, ListSelectionListener {
@@ -40,12 +41,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	private ArrayList<Workout> workouts;
 	private Usuario usuario;
 	private HistoricoWorkouts vistaHistorico;
+	private PantallaEjercicio vistaEjercicio;
 
 	public ControladorInicio(Inicio vistaInicio) {
 		this.vistaInicio = vistaInicio;
 		vistaWorkouts = new Workouts();
 		usuario = new Usuario();
 		vistaHistorico = new HistoricoWorkouts();
+		vistaEjercicio = new PantallaEjercicio();
 		inicializarControlador();
 	}
 
@@ -80,6 +83,9 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
 		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
+
+		vistaWorkouts.getBtnEmpezarWorkout().setActionCommand("EMPEZAR_WORKOUT");
+		vistaWorkouts.getBtnEmpezarWorkout().addActionListener(this);
 
 		// Historial de Workouts
 		vistaWorkouts.getBtnHistoricoWorkouts().setActionCommand("HISTORICO_WORKOUTS");
@@ -150,6 +156,20 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				ex.printStackTrace();
 			}
 			break;
+		case "EMPEZAR_WORKOUT":
+			vistaWorkouts.setVisible(false);
+			vistaEjercicio.setVisible(true);
+			mWorkoutSeleccionado().getEjercicios().get(0).setActual(true);
+			vistaEjercicio.getLblNombreEjercicio().setText(mEjercicioActual().getNombre());
+			vistaEjercicio.getLblNombreWorkout().setText(mWorkoutSeleccionado().getNombre());
+			vistaEjercicio.getLblEjercicioDescripcion().setText(mEjercicioActual().getDescripcion());
+			vistaEjercicio.getLblWorkoutDescripcion().setText(mWorkoutSeleccionado().getDescripcion());
+			vistaEjercicio.getPanelSeries().removeAll();
+			for (Serie s : mEjercicioActual().getSeries()) {
+				vistaEjercicio.getPanelSeries().add(vistaEjercicio.crearSerie(s.getNombre(), s.getFoto(),
+						mEjercicioActual().getSeries().indexOf(s)));
+			}
+			break;
 		default:
 			break;
 		}
@@ -164,7 +184,6 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		}
 	}
 
-
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (e.getSource() == vistaInicio.getPanelLogin().getLblRegistrar()) {
@@ -178,8 +197,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	}
 
 	/**
-	 * Muestra el panel de login cuando se hace clic 
-	 * Ajusta la visibilidad de los paneles relacionados.
+	 * Muestra el panel de login cuando se hace clic Ajusta la visibilidad de los
+	 * paneles relacionados.
 	 */
 	public void mMostrarPanelLogin() {
 		if (vistaInicio.getPanelLogoGrande().isVisible()) {
@@ -318,8 +337,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	}
 
 	/**
-	 * Carga la lista de workouts disponibles para el nivel del usuario y prepara
-	 * el combobox de filtrado.
+	 * Carga la lista de workouts disponibles para el nivel del usuario y prepara el
+	 * combobox de filtrado.
 	 */
 	public void mCargarWorkouts() {
 		vistaWorkouts.getModeloWorkouts().setRowCount(0);
@@ -426,7 +445,6 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		}
 	}
 
-	
 	/**
 	 * Aplica el filtro seleccionado en el combobox para mostrar solo ciertos
 	 * niveles.
@@ -525,6 +543,19 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		return null;
 	}
 
+	public Ejercicio mEjercicioActual() {
+
+		Workout workoutActual = mWorkoutSeleccionado();
+		if (workoutActual != null) {
+			for (Ejercicio e : workoutActual.getEjercicios()) {
+				if (e.isActual()) {
+					return e;
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Desconecta al usuario actual, resetea la vista y crea un nuevo objeto Usuario
 	 * vacío.
@@ -539,8 +570,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	}
 
 	/**
-	 * Valida de forma básica la estructura de un correo electrónico.
-	 * Retorna true si parece válido, false en caso contrario.
+	 * Valida de forma básica la estructura de un correo electrónico. Retorna true
+	 * si parece válido, false en caso contrario.
 	 */
 	private boolean emailValido(String email) {
 		if (email == null)
@@ -674,6 +705,5 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		HiloBackup hiloBackup = new HiloBackup(vistaWorkouts.getLblBackups());
 		hiloBackup.start();
 	}
-
 
 }

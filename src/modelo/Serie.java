@@ -24,6 +24,7 @@ public class Serie implements Serializable {
     private String nombre;
     private String foto;
     private int tiempo; 
+    private boolean actual;
 
     
     /************** Constructores **************/
@@ -36,6 +37,7 @@ public class Serie implements Serializable {
         this.nombre = pNombre;
         this.foto = pFoto;
         this.tiempo = pTiempo;
+        this.actual = false;
     }
 
     /************** Getters y Setters **************/
@@ -71,6 +73,16 @@ public class Serie implements Serializable {
 		this.tiempo = tiempo;
 	}
 	
+	
+	
+	public boolean isActual() {
+		return actual;
+	}
+
+	public void setActual(boolean actual) {
+		this.actual = actual;
+	}
+
 	public static List<Serie> mObtenerSeriesEjercicio(Workout workout,Ejercicio ejercicio) {
 		Firestore conexion = null;
 
