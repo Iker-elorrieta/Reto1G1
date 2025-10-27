@@ -347,7 +347,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		vistaWorkouts.getModeloComboBox().removeAllElements();
 		vistaWorkouts.getModeloComboBox().addElement("Todos los niveles");
-		for (int i = 1; i <= usuario.getNivel(); i++) {
+		for (int i = 0; i <= usuario.getNivel(); i++) {
 			vistaWorkouts.getModeloComboBox().addElement("Nivel " + i);
 		}
 	}
@@ -361,7 +361,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaWorkouts.getModeloWorkouts().setRowCount(0);
 		for (int i = 0; i < workouts.size(); i++) {
 			Workout w = workouts.get(i);
-			if (filtroNivel == 0 || w.getNivel() == filtroNivel) {
+			if (filtroNivel == -1 || w.getNivel() == filtroNivel) {
 				String[] fila = new String[6];
 				fila[0] = w.getIdWorkout();
 				fila[1] = w.getNivel() + "";
@@ -451,14 +451,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	 */
 	public void mFiltrarNiveles() {
 		String sel = (String) vistaWorkouts.getComboBox().getSelectedItem();
-		int filtro = 0;
+		int filtro = -1;
 		if (sel != null && sel.startsWith("Nivel ")) {
 			try {
 				// Es "Nivel X"
 				filtro = Integer.parseInt(sel.substring(6));
 			} catch (NumberFormatException ex) {
 				// Es "Todos los niveles"
-				filtro = 0;
+				filtro = -1;
 			}
 		}
 		mRellenarTablaWorkouts(filtro);
