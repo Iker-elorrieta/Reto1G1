@@ -97,21 +97,18 @@ public class Workout implements Serializable {
 		this.ejercicios = ejercicios;
 	}
 
-	/**
-	 * Calcula el tiempo previsto del workout en segundos (series + descansos entre series).
-	 */
+
 	public int getTiempoPrevistoSegundos() {
 		int tiempoPrevisto = 0;
 		if (ejercicios == null) return tiempoPrevisto;
+		final int PREPARACION_POR_SERIE = 5; // segundos
 		for (Ejercicio e : ejercicios) {
-			if (e == null) continue;
-			for (int i = 0; i < e.getSeries().size(); i++) {
-				Serie s = e.getSeries().get(i);
+			if (e == null || e.getSeries() == null) continue;
+			for (Serie s : e.getSeries()) {
 				if (s == null) continue;
 				tiempoPrevisto += s.getTiempo();
-				if (i < e.getSeries().size() - 1) {
-					tiempoPrevisto += e.getTiempoDescanso();
-				}
+				tiempoPrevisto += e.getTiempoDescanso();
+				tiempoPrevisto += PREPARACION_POR_SERIE;
 			}
 		}
 		return tiempoPrevisto;

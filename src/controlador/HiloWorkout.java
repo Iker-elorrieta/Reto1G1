@@ -1,12 +1,10 @@
 package controlador;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import modelo.Ejercicio;
 import modelo.Serie;
@@ -48,6 +46,7 @@ public class HiloWorkout extends Thread {
 
 	private HiloCronometros hiloCronometros;
 	private final ControladorInicio controlador;
+
 
 	public HiloWorkout(PantallaEjercicio vista, Workout workout, Usuario usuario, Workouts vistaWorkouts,
 			ControladorInicio controlador) {
@@ -128,6 +127,22 @@ public class HiloWorkout extends Thread {
 			actualizarVisibilidad(vista.getLblCronometroDescanso(), false);
 			if (estaDetenido())
 				return;
+
+			// Si hemos terminado el último descanso de la última serie del último ejercicio,
+			// finalizar automáticamente sin esperar al botón "Siguiente".
+			boolean esUltimaSerie = idxSerie == ej.getSeries().size() - 1;
+			boolean esUltimoEjercicio = idxEjercicio == entrenamiento.getEjercicios().size() - 1;
+			if (esUltimoEjercicio && esUltimaSerie) {
+				// Marcar como completado el último ejercicio (idx pasa a tamaño total)
+				int totalEj = entrenamiento.getEjercicios().size();
+				if (idxEjercicio < totalEj) {
+					idxEjercicio = Math.min(idxEjercicio + 1, totalEj);
+				}
+				estado = Estado.FIN;
+				enEjecucion = false;
+				terminarWorkout();
+				return;
+			}
 
 			// Ciclo finalizado -> esperar "Siguiente"
 			estado = Estado.ESPERANDO_SIGUIENTE;
@@ -255,8 +270,8 @@ public class HiloWorkout extends Thread {
 		vista.getLblNombreEjercicio().setText(ej.getNombre());
 		vista.getLblEjercicioDescripcion().setText(ej.getDescripcion());
 		vista.getLblCronometroEjercicio().setText("00:00");
-		vista.getLblCronometroPreparacion().setText("00:05");
-		vista.getLblCronometroDescanso().setText(formatear(ej.getTiempoDescanso() * 1000L));
+		vista.getLblCronometroPreparacion().setText("");
+		vista.getLblCronometroDescanso().setText("");
 		try {
 			vista.mostrarPanelSeries(idxEjercicio);
 		} catch (Exception ignore) {
@@ -318,7 +333,7 @@ public class HiloWorkout extends Thread {
 	 * diálogos. Ejecuta persistencia y evaluación en segundo plano y actualiza la
 	 * UI en el EDT.
 	 */
-	public void terminarWorkout() {
+	private void terminarWorkout() {
 		// Parar cronos y marcar detenido
 		stopCronos();
 
@@ -334,17 +349,22 @@ public class HiloWorkout extends Thread {
 				"Resumen workout:\nTiempo total: %s\nEjercicios completados: %d/%d (%d%%)\nTiempo estimado: %s",
 				formatear(totalMs), completados, totalEj, porcentaje, formatear(tiempoPrevistoMs));
 
+        String[] frases = new String[] {
+            "¡Gran trabajo! Cada día más fuerte.",
+            "Has dado un paso más hacia tus objetivos.",
+            "Constancia y esfuerzo: así se construye el progreso."
+        };
+        String motivacion = frases[(int) (Math.random() * frases.length)];
 		// Mostrar resumen y cambiar a vistaWorkouts en el EDT
-			JOptionPane.showMessageDialog(vista, msg, "Resumen Workout", JOptionPane.INFORMATION_MESSAGE);
 			try {
+            JOptionPane.showMessageDialog(vista, msg + "\n\n" + motivacion, "Resumen Workout", JOptionPane.INFORMATION_MESSAGE);
 				vista.setVisible(false);
 				if (vistaWorkouts != null) {
 					vistaWorkouts.setVisible(true);
 				}
-			} catch (Exception ignore) {
-			}
+			} catch (Exception ignore) {}
 	
-
+	
 			try {
 				if (usuario != null) {
 					UsuWorkout uw = new UsuWorkout(entrenamiento, completados, (int) (totalMs / 1000L), new Date());
@@ -359,11 +379,12 @@ public class HiloWorkout extends Thread {
 
 					boolean promovido = usuario.mEvaluarNivel();
 					if (promovido) {
-						SwingUtilities.invokeLater(() -> {
-							JOptionPane.showMessageDialog(vistaWorkouts,
-									"¡Enhorabuena! Has subido al nivel " + usuario.getNivel(), "Promoción",
-									JOptionPane.INFORMATION_MESSAGE);
-						});
+						controlador.mostrarDatosUsuario();
+						controlador.mCargarWorkouts();
+
+						JOptionPane.showMessageDialog(vistaWorkouts,
+								"¡Enhorabuena! Has subido al nivel " + usuario.getNivel(), "Promoción",
+								JOptionPane.INFORMATION_MESSAGE);
 					}
 				}
 			} finally {
@@ -374,5 +395,8 @@ public class HiloWorkout extends Thread {
 			}
 	
 
+	}
+	public void finalizarInmediato() {
+		terminarWorkout();
 	}
 }

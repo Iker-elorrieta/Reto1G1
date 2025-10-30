@@ -193,7 +193,15 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		case "SALIR_EJERCICIO": 
 			if (hiloWorkout != null) {
-				hiloWorkout.terminarWorkout();
+				// Si no ha empezado, salir directo sin mostrar resumen
+				if (!hiloWorkout.isRunning()) {
+					vistaEjercicio.setVisible(false);
+					vistaWorkouts.setVisible(true);
+					hiloWorkout = null;
+				} else {
+					// Si está en curso, finalizar de forma inmediata mostrando el resumen
+					hiloWorkout.finalizarInmediato();
+				}
 			} else {
 				vistaEjercicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
@@ -271,6 +279,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		try {
 			if (usuario.validarLogin(email, contrasena)) {
 				mCargarWorkouts();
+				mostrarDatosUsuario();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
 				iniciarBackup();
@@ -797,12 +806,9 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		return String.format("%02d:%02d", mm, ss);
 	}
 
-	private String formatearMs(long millis) {
-		long total = Math.max(0, millis) / 1000;
-		long mm = total / 60;
-		long ss = total % 60;
-		return String.format("%02d:%02d", mm, ss);
-	}
+	public void mostrarDatosUsuario() {
+		vistaWorkouts.getLblNivel().setText("Nivel: " + usuario.getNivel());
+	}	
 
     
 
