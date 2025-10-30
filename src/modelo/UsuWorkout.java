@@ -18,7 +18,12 @@ public class UsuWorkout implements Serializable {
 	private int tiempoTotal; // Tiempo total en segundos
 	private Date fecha; // Fecha en la que se completó el workout
 	
-
+	private static String collectionName = "workouts";
+	private static String fieldWorkout = "id_workout";
+	private static String fieldEjerciciosCompletados = "ejercicioscompletados";
+	private static String fieldTiempoTotal = "tiempo_total";
+	private static String fieldFecha = "fecha";
+	
 	/************** Constructores **************/
 	public UsuWorkout(Workout workout, int ejerciciosCompletados, int tiempoTotal, Date fecha) {
 		this.workout = workout;
@@ -67,18 +72,18 @@ public class UsuWorkout implements Serializable {
 	/************** Métodos **************/
 	public static ArrayList<UsuWorkout> mCargarHistorialWorkouts(Usuario usuario) throws Exception {
 		Firestore conexion = Conexion.conectar();
-		var query = conexion.collection("usuarios").document(usuario.getIdUsuario()).collection("workouts").get().get();
+		var query = conexion.collection("usuarios").document(usuario.getIdUsuario()).collection(collectionName).get().get();
 		ArrayList<UsuWorkout> listaWorkouts = new ArrayList<>();
 		for (var doc : query.getDocuments()) {
 			UsuWorkout uw = new UsuWorkout();
 			Workout w = new Workout();
-			DocumentReference refWorkout = (DocumentReference) doc.getData().get("id_workout");
+			DocumentReference refWorkout = (DocumentReference) doc.getData().get(fieldWorkout);
 			w.setIdWorkout(refWorkout.getId());
 			w.mObtenerWorkout(usuario.getNivel(),conexion);
 			uw.setWorkout(w);
-			uw.setEjerciciosCompletados(doc.getLong("ejercicioscompletados").intValue());
-			uw.setTiempoTotal(doc.getLong("tiempo_total").intValue());
-			uw.setFecha(doc.getDate("fecha"));
+			uw.setEjerciciosCompletados(doc.getLong(fieldEjerciciosCompletados).intValue());
+			uw.setTiempoTotal(doc.getLong(fieldTiempoTotal).intValue());
+			uw.setFecha(doc.getDate(fieldFecha));
 			listaWorkouts.add(uw);
 		}
 		conexion.close();

@@ -27,6 +27,11 @@ public class Ejercicio implements Serializable{
     private List<Serie> series = new ArrayList<>();
     private boolean actual;
     
+    private static String collectionWorkouts = "workouts";
+    private static String collectionEjercicios = "ejercicios";
+    private static String fieldNombre = "nombre";
+    private static String fieldDescripcion = "descripcion";
+    private static String fieldTiempoDescanso = "tiempo_descanso";
 	/************** Constructores **************/
     
     public Ejercicio() {
@@ -99,7 +104,7 @@ public class Ejercicio implements Serializable{
 		try {
 			conexion = Conexion.conectar();
 
-			ApiFuture<QuerySnapshot> query = conexion.collection("workouts").document(workout.getIdWorkout()).collection("ejercicios").get();
+			ApiFuture<QuerySnapshot> query = conexion.collection(collectionWorkouts).document(workout.getIdWorkout()).collection(collectionEjercicios).get();
 
 			QuerySnapshot querySnapshot = query.get();
 			List<QueryDocumentSnapshot> ejercicios = querySnapshot.getDocuments();
@@ -107,9 +112,9 @@ public class Ejercicio implements Serializable{
 
 				Ejercicio w = new Ejercicio();
 				w.setIdEjercicio(ejercicio.getId());
-				w.setNombre(ejercicio.getString("nombre"));
-				w.setDescripcion(ejercicio.getString("descripcion"));
-				w.setTiempoDescanso(ejercicio.getLong("tiempo_descanso").intValue());
+				w.setNombre(ejercicio.getString(fieldNombre));
+				w.setDescripcion(ejercicio.getString(fieldDescripcion));
+				w.setTiempoDescanso(ejercicio.getLong(fieldTiempoDescanso).intValue());
 				
 				
 				
