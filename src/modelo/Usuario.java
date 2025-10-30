@@ -14,6 +14,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 
 import conexion.Conexion;
+import java.util.stream.Collectors;
 
 public class Usuario implements Serializable{
 
@@ -54,6 +55,7 @@ public class Usuario implements Serializable{
 		this.fec_nac = pFec_nac;
 		this.nivel = pNivel;
 		this.tipo = pTipo;
+		this.workouts = new ArrayList<>();
 	}
 
 	/************** Getters y Setters **************/
@@ -303,6 +305,54 @@ public class Usuario implements Serializable{
 			}
 		}
 		return listaUsuarios;
+	}
+
+	public boolean mEvaluarNivel() {
+		try {
+			ArrayList<Workout> todos = Workout.mObtenerTodosWorkouts();
+			if (todos == null || todos.isEmpty()) return false;
+			int nivelActual = this.nivel;
+			List<Workout> nivelWorkouts = todos.stream().filter(w -> w.getNivel() == nivelActual)
+				.collect(Collectors.toList());
+			if (nivelWorkouts.isEmpty()) return false; // no hay workouts para este nivel
+
+			// Asegurarse de tener el historial
+			try {
+				this.mCargarHistorialWorkouts();
+			} catch (Exception ignore) {
+			}
+
+			// Para cada workout del nivel, comprobar si existe en el historial del usuario
+			for (Workout w : nivelWorkouts) {
+				boolean encontrado = false;
+				if (this.workouts != null) {
+					for (UsuWorkout uw : this.workouts) {
+						if (uw.getWorkout() != null && w.getIdWorkout() != null
+							&& w.getIdWorkout().equals(uw.getWorkout().getIdWorkout())) {
+							encontrado = true;
+							break;
+						}
+					}
+				}
+				if (!encontrado) {
+					return false; // falta al menos un workout del nivel
+				}
+			}
+
+			// Si llegamos aquí, el usuario completó todos los workouts del nivel
+			if (this.nivel < 5) {
+				this.nivel = this.nivel + 1;
+				try {
+					this.mActualizarUsuario();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 

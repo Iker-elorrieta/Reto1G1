@@ -1,14 +1,9 @@
 package controlador;
 
-import javax.swing.SwingUtilities;
 import java.util.function.IntConsumer;
 
 import vista.PantallaEjercicio;
 
-/**
- * Hilo dedicado a actualizar los cronómetros ascendentes de workout y ejercicio.
- * Además expone utilidades como la cuenta atrás respetando pausa/detención.
- */
 public class HiloCronometros extends Thread {
 
 	private final HiloWorkout hiloWorkout;
@@ -29,17 +24,18 @@ public class HiloCronometros extends Thread {
 				continue;
 			}
 
-			long transWorkout = hiloWorkout.getElapsedWorkoutMs();
-			long transEjercicio = hiloWorkout.getElapsedEjercicioMs();
+			long transWorkout = hiloWorkout.workoutMs();
+			long transEjercicio = hiloWorkout.ejercicioMs();
 			String txtWorkout = formatear(transWorkout);
 			String txtEjercicio = formatear(transEjercicio);
 
-			SwingUtilities.invokeLater(() -> {
-				vista.getLblCronometroWorkout().setText(txtWorkout);
-				vista.getLblCronometroEjercicio().setText(txtEjercicio);
-			});
+			vista.getLblCronometroWorkout().setText(txtWorkout);
+			vista.getLblCronometroEjercicio().setText(txtEjercicio);
 
-			try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException ignored) {
+			}
 		}
 	}
 
@@ -54,7 +50,8 @@ public class HiloCronometros extends Thread {
 		long inicioPausaLocal = 0L;
 
 		for (;;) {
-			if (hiloWorkout.isDetenido() || !hiloWorkout.isRunning()) return;
+			if (hiloWorkout.isDetenido() || !hiloWorkout.isRunning())
+				return;
 			if (hiloWorkout.isPaused()) {
 				inicioPausaLocal = System.currentTimeMillis();
 				hiloWorkout.esperarDespausaBloqueante();
@@ -64,8 +61,12 @@ public class HiloCronometros extends Thread {
 			long trans = (ahora - inicio - pausaAcum);
 			int restante = (int) Math.max(0, total - (trans / 1000));
 			onTick.accept(restante);
-			if (restante <= 0) break;
-			try { Thread.sleep(200); } catch (InterruptedException ignored) {}
+			if (restante <= 0)
+				break;
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException ignored) {
+			}
 		}
 	}
 

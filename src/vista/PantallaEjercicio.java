@@ -14,14 +14,11 @@ import java.awt.FlowLayout;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
-import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import javax.swing.SwingConstants;
@@ -143,34 +140,32 @@ public class PantallaEjercicio extends JFrame {
 		lblEjercicioDescripcion.setHorizontalAlignment(SwingConstants.LEFT);
 		lblEjercicioDescripcion.setForeground(Color.BLACK);
 		lblEjercicioDescripcion.setFont(new Font("Raleway", Font.PLAIN, 15));
-		lblEjercicioDescripcion.setBounds(14, 57, 650, 36);
+		lblEjercicioDescripcion.setBounds(14, 57, 650, 20);
 		panelEjercicio.add(lblEjercicioDescripcion);
 
 		lblCronometroEjercicio = new JLabel("00:00");
+		lblCronometroEjercicio.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblCronometroEjercicio.setForeground(Color.BLACK);
 		lblCronometroEjercicio.setFont(new Font("Raleway", Font.BOLD, 30));
 		lblCronometroEjercicio.setBounds(674, 11, 87, 36);
 		panelEjercicio.add(lblCronometroEjercicio);
 
-		JLabel lblNombreCronoDescanso = new JLabel("Descanso:");
-		lblNombreCronoDescanso.setBounds(674, 47, 87, 14);
-		panelEjercicio.add(lblNombreCronoDescanso);
-		lblNombreCronoDescanso.setForeground(new Color(0, 0, 0));
-
-		lblCronometroDescanso = new JLabel("00:45");
-		lblCronometroDescanso.setBounds(674, 61, 46, 14);
+		lblCronometroDescanso = new JLabel("");
+		lblCronometroDescanso.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblCronometroDescanso.setBounds(644, 48, 117, 14);
 		panelEjercicio.add(lblCronometroDescanso);
 		lblCronometroDescanso.setForeground(new Color(0, 0, 0));
 
 		panelSeries = new JPanel();
 		panelSeries.setBackground(new Color(195, 195, 195));
 		panelSeries.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 20));
-		panelSeries.setBounds(14, 86, 747, 228);
+		panelSeries.setBounds(0, 86, 761, 239);
 		panelEjercicio.add(panelSeries);
 		
-		lblCronometroPreparacion = new JLabel("00:45");
+		lblCronometroPreparacion = new JLabel("");
+		lblCronometroPreparacion.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblCronometroPreparacion.setForeground(Color.BLACK);
-		lblCronometroPreparacion.setBounds(599, 30, 46, 14);
+		lblCronometroPreparacion.setBounds(644, 48, 117, 14);
 		panelEjercicio.add(lblCronometroPreparacion);
 		lblCronometroWorkout = new JLabel("00:00");
 		lblCronometroWorkout.setBounds(674, 11, 87, 36);
@@ -325,80 +320,6 @@ public class PantallaEjercicio extends JFrame {
 		this.lblCronometroEjercicio = lblCronometroEjercicio;
 	}
 	
-	
-
-	public JPanel crearSerie(String nombreSerie, String foto, int posicion) {
-		JPanel panelSerie1 = new JPanel() {
-			private static final long serialVersionUID = 1L;
-			{
-				setOpaque(false);
-			}
-
-			@Override
-			protected void paintComponent(Graphics g) {
-				Graphics2D g2 = (Graphics2D) g.create();
-				try {
-					g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-					int arc = 30;
-					RoundRectangle2D round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), arc, arc);
-					g2.setClip(round);
-
-					g2.setColor(getBackground());
-					g2.fill(round);
-
-					super.paintComponent(g2);
-				} finally {
-					g2.dispose();
-				}
-			}
-		};
-		panelSerie1.setPreferredSize(new Dimension(200, 200));
-		panelSerie1.setForeground(Color.WHITE);
-		panelSerie1.setBackground(new Color(255, 255, 255));
-		panelSerie1.setLayout(null);
-
-		JPanel panelImagenSerie = new JPanel() {
-			private static final long serialVersionUID = 1L;
-			private Image backgroundImage;
-
-			{
-				if (foto != null) {
-					try {
-						var req = HttpRequest.newBuilder(URI.create(foto)).build();
-						var res = HttpClient.newHttpClient().send(req, HttpResponse.BodyHandlers.ofInputStream());
-						backgroundImage = ImageIO.read(res.body());
-					} catch (Exception e) {
-
-					}
-				}
-			}
-
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				if (backgroundImage != null) {
-					g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-				}
-			}
-		};
-		panelImagenSerie.setOpaque(false);
-		panelImagenSerie.setBounds(30, 0, 130, 130);
-		panelSerie1.add(panelImagenSerie);
-
-		JLabel lblNombreSerie = new JLabel(nombreSerie);
-		lblNombreSerie.setForeground(Color.BLACK);
-		lblNombreSerie.setFont(new Font("Raleway", Font.BOLD, 15));
-		lblNombreSerie.setBounds(10, 138, 150, 26);
-		panelSerie1.add(lblNombreSerie);
-
-		JLabel lblCronometroSerie = new JLabel("00:00");
-		lblCronometroSerie.setForeground(Color.BLACK);
-		lblCronometroSerie.setFont(new Font("Raleway", Font.BOLD, 15));
-		lblCronometroSerie.setBounds(10, 163, 150, 26);
-		panelSerie1.add(lblCronometroSerie);
-
-		return panelSerie1;
-	}
 
 	public JPanel getPanelSeries() {
 		return panelSeries;
@@ -421,12 +342,10 @@ public class PantallaEjercicio extends JFrame {
 	}
 
 	public JPanel crearPanelSeriesEjercicio(Ejercicio ej) {
-
 	    JPanel panel = new JPanel();
 	    panel.setOpaque(false);
 	    panel.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
 
-	    int index = 0;
 	    for (Serie s : ej.getSeries()) {
 
 	        JPanel panelSerie = new JPanel() {
@@ -487,7 +406,6 @@ public class PantallaEjercicio extends JFrame {
 	        panelImagenSerie.setBounds(30, 0, 130, 130);
 	        panelSerie.add(panelImagenSerie);
 
-	        // 📌 Nombre de la serie
 	        JLabel lblNombreSerie = new JLabel(s.getNombre());
 	        lblNombreSerie.setForeground(Color.BLACK);
 	        lblNombreSerie.setFont(new Font("Raleway", Font.BOLD, 15));
@@ -506,7 +424,6 @@ public class PantallaEjercicio extends JFrame {
 	        s.setCronometro(lblCronometroSerie);
 
 	        panel.add(panelSerie);
-	        index++;
 	    }
 
 	    return panel;

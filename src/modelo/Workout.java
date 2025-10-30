@@ -97,6 +97,26 @@ public class Workout implements Serializable {
 		this.ejercicios = ejercicios;
 	}
 
+	/**
+	 * Calcula el tiempo previsto del workout en segundos (series + descansos entre series).
+	 */
+	public int getTiempoPrevistoSegundos() {
+		int tiempoPrevisto = 0;
+		if (ejercicios == null) return tiempoPrevisto;
+		for (Ejercicio e : ejercicios) {
+			if (e == null) continue;
+			for (int i = 0; i < e.getSeries().size(); i++) {
+				Serie s = e.getSeries().get(i);
+				if (s == null) continue;
+				tiempoPrevisto += s.getTiempo();
+				if (i < e.getSeries().size() - 1) {
+					tiempoPrevisto += e.getTiempoDescanso();
+				}
+			}
+		}
+		return tiempoPrevisto;
+	}
+
 	/************** Metodo CRUD **************/
 
 	// ********** READ **********

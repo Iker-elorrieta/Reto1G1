@@ -8,6 +8,8 @@ import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 
 import conexion.Conexion;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UsuWorkout implements Serializable {
 
@@ -88,5 +90,25 @@ public class UsuWorkout implements Serializable {
 		}
 		conexion.close();
 		return listaWorkouts;
+	}
+
+
+	public void mAnadirHistorialUsuario(Usuario usuario) throws Exception {
+		if (usuario == null || usuario.getIdUsuario() == null) {
+			throw new IllegalArgumentException("Usuario inválido para añadir historial");
+		}
+		Firestore conexion = Conexion.conectar();
+		try {
+			DocumentReference workoutRef = conexion.collection(collectionName).document(workout.getIdWorkout());
+			Map<String, Object> datos = new HashMap<>();
+			datos.put(fieldWorkout, workoutRef);
+			datos.put(fieldEjerciciosCompletados, ejerciciosCompletados);
+			datos.put(fieldTiempoTotal, tiempoTotal);
+			datos.put(fieldFecha, fecha);
+			conexion.collection("usuarios").document(usuario.getIdUsuario()).collection(collectionName)
+				.document().set(datos).get();
+		} finally {
+			conexion.close();
+		}
 	}
 }
