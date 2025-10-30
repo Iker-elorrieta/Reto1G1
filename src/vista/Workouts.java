@@ -46,6 +46,7 @@ public class Workouts extends JFrame {
 	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
 	private JComboBox<String> comboBox;
 	private JLabel lblBackups;
+	private JLabel lblNivel;
 
 	public Workouts() {
 		setTitle("Squad Gym - Workouts");
@@ -229,6 +230,12 @@ public class Workouts extends JFrame {
 		lblBackups.setBounds(10, 417, 284, 14);
 		lblBackups.setFont(new Font("Raleway", Font.BOLD, 15));
 		panelIzquierda.add(lblBackups);
+		
+		lblNivel = new JLabel("");
+		lblNivel.setForeground(new Color(255, 255, 255));
+		lblNivel.setFont(new Font("Raleway", Font.BOLD, 15));
+		lblNivel.setBounds(10, 393, 284, 14);
+		panelIzquierda.add(lblNivel);
 
 		lblEjercicios = new JLabel("Ejercicios");
 		lblEjercicios.setFont(new Font("Raleway", Font.PLAIN, 30));
@@ -344,5 +351,12 @@ public class Workouts extends JFrame {
 
 	public void setComboBox(JComboBox<String> comboBox) {
 		this.comboBox = comboBox;
+	}
+	public JLabel getLblNivel() {
+		return lblNivel;
+	}
+
+	public void setLblNivel(JLabel lblNivel) {
+		this.lblNivel = lblNivel;
 	}
 }

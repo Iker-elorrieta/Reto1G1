@@ -26,7 +26,6 @@ import javax.swing.JTextField;
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
-import modelo.Serie;
 import modelo.UsuWorkout;
 import vista.HistoricoWorkouts;
 import vista.Inicio;
@@ -43,6 +42,10 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	private HistoricoWorkouts vistaHistorico;
 	private PantallaEjercicio vistaEjercicio;
 
+	// --- NUEVO: gestor de cronos y workout en curso ---
+	private HiloWorkout hiloWorkout;
+	private Workout workoutEnCurso;
+
 	public ControladorInicio(Inicio vistaInicio) {
 		this.vistaInicio = vistaInicio;
 		vistaWorkouts = new Workouts();
@@ -50,6 +53,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaHistorico = new HistoricoWorkouts();
 		vistaEjercicio = new PantallaEjercicio();
 		inicializarControlador();
+	}
+
+	/**
+	 * Callback desde HiloWorkout para limpiar la referencia al hilo cuando
+	 * termina (naturalmente o por salir).
+	 */
+	public void onWorkoutFinished() {
+		hiloWorkout = null;
 	}
 
 	/**
@@ -84,8 +95,18 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
 		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
 
-		vistaWorkouts.getBtnEmpezarWorkout().setActionCommand("EMPEZAR_WORKOUT");
+		vistaWorkouts.getBtnEmpezarWorkout().setActionCommand("ABRIR_PANTALLA_EJERCICIO");
 		vistaWorkouts.getBtnEmpezarWorkout().addActionListener(this);
+
+		// Vista Ejercicio
+		vistaEjercicio.getBtnSalir().setActionCommand("SALIR_EJERCICIO");
+		vistaEjercicio.getBtnSalir().addActionListener(this);
+
+		vistaEjercicio.getBtnEmpezar().setActionCommand("EMPEZAR_PAUSAR_REANUDAR");
+		vistaEjercicio.getBtnEmpezar().addActionListener(this);
+
+		vistaEjercicio.getBtnSiguiente().setActionCommand("SIGUIENTE_EJERCICIO");
+		vistaEjercicio.getBtnSiguiente().addActionListener(this);
 
 		// Historial de Workouts
 		vistaWorkouts.getBtnHistoricoWorkouts().setActionCommand("HISTORICO_WORKOUTS");
@@ -105,7 +126,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String cmd = e.getActionCommand();
+		final String cmd = e.getActionCommand();
 
 		switch (cmd) {
 		case "MOSTRAR_LOGIN":
@@ -156,20 +177,37 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				ex.printStackTrace();
 			}
 			break;
-		case "EMPEZAR_WORKOUT":
-			vistaWorkouts.setVisible(false);
-			vistaEjercicio.setVisible(true);
-			mWorkoutSeleccionado().getEjercicios().get(0).setActual(true);
-			vistaEjercicio.getLblNombreEjercicio().setText(mEjercicioActual().getNombre());
-			vistaEjercicio.getLblNombreWorkout().setText(mWorkoutSeleccionado().getNombre());
-			vistaEjercicio.getLblEjercicioDescripcion().setText(mEjercicioActual().getDescripcion());
-			vistaEjercicio.getLblWorkoutDescripcion().setText(mWorkoutSeleccionado().getDescripcion());
-			vistaEjercicio.getPanelSeries().removeAll();
-			for (Serie s : mEjercicioActual().getSeries()) {
-				vistaEjercicio.getPanelSeries().add(vistaEjercicio.crearSerie(s.getNombre(), s.getFoto(),
-						mEjercicioActual().getSeries().indexOf(s)));
+
+		case "ABRIR_PANTALLA_EJERCICIO":
+			abrirPantallaEjercicio();
+			break;
+
+		case "EMPEZAR_PAUSAR_REANUDAR":
+			manejarEmpezarPausarReanudar();
+			break;
+
+		case "SIGUIENTE_EJERCICIO":
+			if (hiloWorkout != null)
+				hiloWorkout.siguiente();
+			break;
+
+		case "SALIR_EJERCICIO": 
+			if (hiloWorkout != null) {
+				// Si no ha empezado, salir directo sin mostrar resumen
+				if (!hiloWorkout.isRunning()) {
+					vistaEjercicio.setVisible(false);
+					vistaWorkouts.setVisible(true);
+					hiloWorkout = null;
+				} else {
+					// Si está en curso, finalizar de forma inmediata mostrando el resumen
+					hiloWorkout.finalizarInmediato();
+				}
+			} else {
+				vistaEjercicio.setVisible(false);
+				vistaWorkouts.setVisible(true);
 			}
 			break;
+
 		default:
 			break;
 		}
@@ -241,6 +279,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		try {
 			if (usuario.validarLogin(email, contrasena)) {
 				mCargarWorkouts();
+				mostrarDatosUsuario();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
 				iniciarBackup();
@@ -415,17 +454,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				}
 			}
 
-			// Calcular tiempo previsto
-			int tiempoPrevisto = 0;
-			for (Ejercicio e : w.getEjercicios()) {
-				for (int i = 0; i < e.getSeries().size(); i++) {
-					Serie s = e.getSeries().get(i);
-					tiempoPrevisto += s.getTiempo();
-					if (i < e.getSeries().size() - 1) {
-						tiempoPrevisto += e.getTiempoDescanso();
-					}
-				}
-			}
+			// Calcular tiempo previsto (usar método centralizado en Workout)
+			int tiempoPrevisto = (w != null) ? w.getTiempoPrevistoSegundos() : 0;
 
 			String fecha = sdf.format(uw.getFecha());
 
@@ -705,5 +735,81 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		HiloBackup hiloBackup = new HiloBackup(vistaWorkouts.getLblBackups());
 		hiloBackup.start();
 	}
+
+	/**
+	 * Abre la pantalla de ejercicio, carga datos del workout/ejercicio y prepara
+	 * paneles/cronómetros.
+	 */
+	private void abrirPantallaEjercicio() {
+		Workout w = mWorkoutSeleccionado();
+		if (w == null)
+			return;
+		workoutEnCurso = w;
+		// Asegurar ejercicios cargados
+		if (workoutEnCurso.getEjercicios() == null || workoutEnCurso.getEjercicios().isEmpty()) {
+			ArrayList<Ejercicio> ejerciciosArray = Ejercicio.mObtenerEjerciciosWorkout(workoutEnCurso);
+			workoutEnCurso.setEjercicios(ejerciciosArray);
+		}
+
+		// Datos de cabecera workout
+		vistaEjercicio.getLblNombreWorkout().setText(workoutEnCurso.getNombre());
+		vistaEjercicio.getLblWorkoutDescripcion().setText(workoutEnCurso.getDescripcion());
+
+		// Construir paneles de series por ejercicio y mostrar el primero
+		vistaEjercicio.panelSeriesPorEjercicio.clear();
+		for (Ejercicio ej : workoutEnCurso.getEjercicios()) {
+			vistaEjercicio.panelSeriesPorEjercicio.add(vistaEjercicio.crearPanelSeriesEjercicio(ej));
+		}
+		if (!workoutEnCurso.getEjercicios().isEmpty()) {
+			Ejercicio ej0 = workoutEnCurso.getEjercicios().get(0);
+			vistaEjercicio.getLblNombreEjercicio().setText(ej0.getNombre());
+			vistaEjercicio.getLblEjercicioDescripcion().setText(ej0.getDescripcion());
+			vistaEjercicio.getLblCronometroDescanso().setText(formatearSeg(ej0.getTiempoDescanso()));
+			vistaEjercicio.getLblCronometroPreparacion().setText("00:05");
+			vistaEjercicio.mostrarPanelSeries(0);
+		}
+
+		// Inicialización de labels
+		vistaEjercicio.getLblCronometroWorkout().setText("00:00");
+		vistaEjercicio.getLblCronometroEjercicio().setText("00:00");
+		vistaEjercicio.getBtnEmpezar().setText("Empezar");
+		vistaEjercicio.getBtnSiguiente().setVisible(true);
+		vistaEjercicio.getBtnSiguiente().setEnabled(false);
+
+	// Crear gestor de cronos (pasar usuario, vistaWorkouts y referencia al controlador para callback)
+	hiloWorkout = new HiloWorkout(vistaEjercicio, workoutEnCurso, usuario, vistaWorkouts, this);
+
+		vistaWorkouts.setVisible(false);
+		vistaEjercicio.setVisible(true);
+	}
+
+	private void manejarEmpezarPausarReanudar() {
+		if (hiloWorkout == null)
+			return;
+		if (!hiloWorkout.isRunning()) {
+			hiloWorkout.start();
+			vistaEjercicio.getBtnEmpezar().setText("Pausar");
+			return;
+		}
+		if (hiloWorkout.isPaused()) {
+			hiloWorkout.reanudar();
+			vistaEjercicio.getBtnEmpezar().setText("Pausar");
+		} else {
+			hiloWorkout.pause();
+			vistaEjercicio.getBtnEmpezar().setText("Reanudar");
+		}
+	}
+
+	private String formatearSeg(int segundos) {
+		int mm = Math.max(0, segundos) / 60;
+		int ss = Math.max(0, segundos) % 60;
+		return String.format("%02d:%02d", mm, ss);
+	}
+
+	public void mostrarDatosUsuario() {
+		vistaWorkouts.getLblNivel().setText("Nivel: " + usuario.getNivel());
+	}	
+
+    
 
 }

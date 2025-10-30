@@ -97,6 +97,23 @@ public class Workout implements Serializable {
 		this.ejercicios = ejercicios;
 	}
 
+
+	public int getTiempoPrevistoSegundos() {
+		int tiempoPrevisto = 0;
+		if (ejercicios == null) return tiempoPrevisto;
+		final int PREPARACION_POR_SERIE = 5; // segundos
+		for (Ejercicio e : ejercicios) {
+			if (e == null || e.getSeries() == null) continue;
+			for (Serie s : e.getSeries()) {
+				if (s == null) continue;
+				tiempoPrevisto += s.getTiempo();
+				tiempoPrevisto += e.getTiempoDescanso();
+				tiempoPrevisto += PREPARACION_POR_SERIE;
+			}
+		}
+		return tiempoPrevisto;
+	}
+
 	/************** Metodo CRUD **************/
 
 	// ********** READ **********
