@@ -121,11 +121,34 @@ public class Workout implements Serializable {
 		return tiempoPrevisto;
 	}
 
+	/**
+	 * Calcula el porcentaje de completado del workout en base al número de
+	 * ejercicios completados. Sólo se considera COMPLETADO al 100% si
+	 * ejerciciosCompletados >= total de ejercicios.
+	 */
+	public int calcularPorcentajeCompletado(int ejerciciosCompletados) {
+		int total = (this.ejercicios == null) ? 0 : this.ejercicios.size();
+		if (total <= 0)
+			return 0;
+		int pct = (int) Math.round((ejerciciosCompletados * 100.0) / total);
+		if (pct > 100)
+			pct = 100;
+		if (pct < 0)
+			pct = 0;
+		return pct;
+	}
+
+	public int calcularPorcentajeCompletado(UsuWorkout uw) {
+		if (uw == null)
+			return 0;
+		return calcularPorcentajeCompletado(uw.getEjerciciosCompletados());
+	}
+
 	/************** Metodo CRUD **************/
 
-	public void mObtenerWorkout(int nivel,Firestore conexion,boolean conexionInternet) {
+	public void mObtenerWorkout(int nivel, Firestore conexion, boolean conexionInternet) {
 		if (conexionInternet) {
-			fbObtenerWorkout(nivel,conexion);
+			fbObtenerWorkout(nivel, conexion);
 		} else {
 			ArrayList<Workout> workouts = datLeerTodosWorkouts();
 			for (Workout w : workouts) {
@@ -140,6 +163,7 @@ public class Workout implements Serializable {
 			}
 		}
 	}
+
 	public void fbObtenerWorkout(int nivel, Firestore conexion) {
 		boolean cerrarConexion = false;
 		try {
@@ -241,7 +265,7 @@ public class Workout implements Serializable {
 
 		} catch (InterruptedException | ExecutionException e) {
 			System.out.println("Error: Clase Workout, metodo mObtenerWorkout con arrayList");
-			e.printStackTrace();
+		 e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -260,6 +284,7 @@ public class Workout implements Serializable {
 			return datLeerTodosWorkouts();
 		}
 	}
+
 	public static ArrayList<Workout> fbObtenerTodosWorkouts() {
 		Firestore conexion = null;
 		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();

@@ -397,7 +397,7 @@ public class Usuario implements Serializable {
 				}
 			} catch (IOException | ClassNotFoundException e) {
 				System.out.println("Error leyendo backups/usuarios.dat");
-				e.printStackTrace();
+			 e.printStackTrace();
 			}
 			return usuarios;
 		}
@@ -465,23 +465,27 @@ public class Usuario implements Serializable {
 			}
 
 			// Para cada workout del nivel, comprobar si existe en el historial del usuario
+			// con el 100% de ejercicios completados
 			for (Workout w : nivelWorkouts) {
-				boolean encontrado = false;
+				boolean completadoAl100 = false;
 				if (this.workouts != null) {
 					for (UsuWorkout uw : this.workouts) {
 						if (uw.getWorkout() != null && w.getIdWorkout() != null
 								&& w.getIdWorkout().equals(uw.getWorkout().getIdWorkout())) {
-							encontrado = true;
-							break;
+							int pct = w.calcularPorcentajeCompletado(uw);
+							if (pct >= 100) {
+								completadoAl100 = true;
+								break;
+							}
 						}
 					}
 				}
-				if (!encontrado) {
-					return false; // falta al menos un workout del nivel
+				if (!completadoAl100) {
+					return false; // falta al menos un workout del nivel completado al 100%
 				}
 			}
 
-			// Si llegamos aquí, el usuario completó todos los workouts del nivel
+			// Si llegamos aquí, el usuario completó todos los workouts del nivel al 100%
 			if (this.nivel < 5) {
 				this.nivel = this.nivel + 1;
 				try {

@@ -462,7 +462,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 			String fecha = sdf.format(uw.getFecha());
 
-			int porcentaje = (int) Math.round((uw.getEjerciciosCompletados() * 100.0) / w.getEjercicios().size());
+			int porcentaje = (w != null) ? w.calcularPorcentajeCompletado(uw) : 0;
 			String tiempoTotalStr = String.format("%02d:%02d", tiempoTotal / 60, tiempoTotal % 60);
 			String tiempoPrevistoStr = String.format("%02d:%02d", tiempoPrevisto / 60, tiempoPrevisto % 60);
 
