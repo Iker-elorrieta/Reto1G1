@@ -96,7 +96,7 @@ public class Ejercicio implements Serializable{
 		this.actual = actual;
 	}
 
-	public static ArrayList<Ejercicio> mObtenerEjerciciosWorkout(Workout workout) {
+	public static ArrayList<Ejercicio> fbObtenerEjerciciosWorkout(Workout workout) {
 		Firestore conexion = null;
 
 		ArrayList<Ejercicio> listaDeEjercicios = new ArrayList<Ejercicio>();
@@ -133,7 +133,7 @@ public class Ejercicio implements Serializable{
 			e.printStackTrace();
 		}
 		for (Ejercicio ej : listaDeEjercicios) {
-			ej.series = Serie.mObtenerSeriesEjercicio(workout,ej);
+			ej.series = Serie.fbObtenerSeriesEjercicio(workout,ej);
 		}
 
 		return listaDeEjercicios;

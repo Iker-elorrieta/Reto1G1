@@ -8,7 +8,7 @@ public class ProcesoBackup {
 	public static void main(String[] args) {
 		// Llamar al hilo de backup
 		try {
-			Backup backup = new Backup(Workout.mObtenerTodosWorkouts(), Usuario.mObtenerTodosUsuarios());
+			Backup backup = new Backup(Workout.mObtenerTodosWorkouts(true), Usuario.fbObtenerTodosUsuarios(true));
 			// Guardar datos binarios
 			backup.backupBinario();
 			// Guardar datos XML

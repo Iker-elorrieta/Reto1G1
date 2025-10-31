@@ -164,7 +164,7 @@ public class Workouts extends JFrame {
 		// Ordenar por fecha de inicio
 		TableRowSorter<TableModel> sort = new TableRowSorter<>(modeloWorkouts);
 		tableWorkouts.setRowSorter(sort);
-		sort.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
+		sort.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.DESCENDING)));
 
 		JScrollPane scrollPaneWorkouts = new JScrollPane();
 		scrollPaneWorkouts.setBounds(327, 91, 647, 208);

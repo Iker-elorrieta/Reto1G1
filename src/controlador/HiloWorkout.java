@@ -369,7 +369,7 @@ public class HiloWorkout extends Thread {
 				if (usuario != null) {
 					UsuWorkout uw = new UsuWorkout(entrenamiento, completados, (int) (totalMs / 1000L), new Date());
 					try {
-						uw.mAnadirHistorialUsuario(usuario);
+						uw.mAnadirHistorialUsuario(usuario, controlador.tieneConexionInternet());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -377,7 +377,7 @@ public class HiloWorkout extends Thread {
 						usuario.getWorkouts().add(uw);
 					}
 
-					boolean promovido = usuario.mEvaluarNivel();
+					boolean promovido = usuario.mEvaluarNivel(controlador.tieneConexionInternet());
 					if (promovido) {
 						controlador.mostrarDatosUsuario();
 						controlador.mCargarWorkouts();
@@ -389,7 +389,7 @@ public class HiloWorkout extends Thread {
 				}
 			} finally {
 				try {
-					if (controlador != null) controlador.onWorkoutFinished();
+					if (controlador != null) controlador.terminarWorkout();
 				} catch (Exception ignore) {
 				}
 			}

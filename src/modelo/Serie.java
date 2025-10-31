@@ -103,7 +103,7 @@ public class Serie implements Serializable {
 		this.cronometro = cronometro;
 	}
 
-	public static List<Serie> mObtenerSeriesEjercicio(Workout workout,Ejercicio ejercicio) {
+	public static List<Serie> fbObtenerSeriesEjercicio(Workout workout,Ejercicio ejercicio) {
 		Firestore conexion = null;
 
 		ArrayList<Serie> listaSeries = new ArrayList<Serie>();

@@ -1,6 +1,9 @@
 package modelo;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.Query.Direction;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 
@@ -45,6 +49,7 @@ public class Workout implements Serializable {
 		this.descripcion = pDescripcion;
 		this.nivel = pNivel;
 		this.video = pVideo;
+		this.ejercicios = new ArrayList<>();
 	}
 
 	/************** Getters y Setters **************/
@@ -97,15 +102,17 @@ public class Workout implements Serializable {
 		this.ejercicios = ejercicios;
 	}
 
-
 	public int getTiempoPrevistoSegundos() {
 		int tiempoPrevisto = 0;
-		if (ejercicios == null) return tiempoPrevisto;
+		if (ejercicios == null)
+			return tiempoPrevisto;
 		final int PREPARACION_POR_SERIE = 5; // segundos
 		for (Ejercicio e : ejercicios) {
-			if (e == null || e.getSeries() == null) continue;
+			if (e == null || e.getSeries() == null)
+				continue;
 			for (Serie s : e.getSeries()) {
-				if (s == null) continue;
+				if (s == null)
+					continue;
 				tiempoPrevisto += s.getTiempo();
 				tiempoPrevisto += e.getTiempoDescanso();
 				tiempoPrevisto += PREPARACION_POR_SERIE;
@@ -116,8 +123,24 @@ public class Workout implements Serializable {
 
 	/************** Metodo CRUD **************/
 
-	// ********** READ **********
-	public void mObtenerWorkout(int nivel, Firestore conexion) {
+	public void mObtenerWorkout(int nivel,Firestore conexion,boolean conexionInternet) {
+		if (conexionInternet) {
+			fbObtenerWorkout(nivel,conexion);
+		} else {
+			ArrayList<Workout> workouts = datLeerTodosWorkouts();
+			for (Workout w : workouts) {
+				if (w.getIdWorkout().equals(this.getIdWorkout()) && w.getNivel() <= nivel) {
+					this.setNombre(w.getNombre());
+					this.setDescripcion(w.getDescripcion());
+					this.setNivel(w.getNivel());
+					this.setVideo(w.getVideo());
+					this.setEjercicios(w.getEjercicios());
+					return;
+				}
+			}
+		}
+	}
+	public void fbObtenerWorkout(int nivel, Firestore conexion) {
 		boolean cerrarConexion = false;
 		try {
 			if (conexion == null) {
@@ -148,21 +171,59 @@ public class Workout implements Serializable {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		setEjercicios(Ejercicio.mObtenerEjerciciosWorkout(this));
+		setEjercicios(Ejercicio.fbObtenerEjerciciosWorkout(this));
 		return;
 
 	}
 
-	public static ArrayList<Workout> mObtenerWorkouts(int nivel) {
+	public static ArrayList<Workout> datLeerTodosWorkouts() {
+		File file = new File("backups/workouts.dat");
+		ArrayList<Workout> lista = new ArrayList<>();
+		if (!file.isFile()) {
+			return lista;
+		}
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+			Object obj = ois.readObject();
+			if (obj instanceof List<?>) {
+				for (Object o : (List<?>) obj) {
+					if (o instanceof Workout) {
+						Workout w = (Workout) o;
+						lista.add(w);
+					}
+				}
+			}
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Error leyendo backups/workouts.dat");
+			e.printStackTrace();
+		}
+		return lista;
+	}
+
+	public static ArrayList<Workout> mObtenerWorkouts(int nivel, boolean conexionInternet) {
+		if (conexionInternet) {
+			return fbObtenerWorkouts(nivel);
+		} else {
+			ArrayList<Workout> workouts = datLeerTodosWorkouts();
+			ArrayList<Workout> workoutsNivel = new ArrayList<>();
+			for (Workout w : workouts) {
+				if (w.getNivel() <= nivel) {
+					workoutsNivel.add(w);
+				}
+			}
+			return workoutsNivel;
+		}
+	}
+
+	public static ArrayList<Workout> fbObtenerWorkouts(int nivel) {
+
 		Firestore conexion = null;
 
 		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();
 
 		try {
 			conexion = Conexion.conectar();
-
 			ApiFuture<QuerySnapshot> query = conexion.collection(collectionName)
-					.whereLessThanOrEqualTo(fieldNivel, nivel).get();
+					.whereLessThanOrEqualTo(fieldNivel, nivel).orderBy(fieldNivel, Direction.DESCENDING).get();
 			QuerySnapshot querySnapshot = query.get();
 			List<QueryDocumentSnapshot> workouts = querySnapshot.getDocuments();
 			for (QueryDocumentSnapshot workout : workouts) {
@@ -192,7 +253,14 @@ public class Workout implements Serializable {
 		return listaDeWorkouts;
 	}
 
-	public static ArrayList<Workout> mObtenerTodosWorkouts() {
+	public static ArrayList<Workout> mObtenerTodosWorkouts(boolean conexionWifi) {
+		if (conexionWifi) {
+			return fbObtenerTodosWorkouts();
+		} else {
+			return datLeerTodosWorkouts();
+		}
+	}
+	public static ArrayList<Workout> fbObtenerTodosWorkouts() {
 		Firestore conexion = null;
 		ArrayList<Workout> listaDeWorkouts = new ArrayList<Workout>();
 		try {
@@ -224,7 +292,7 @@ public class Workout implements Serializable {
 			e.printStackTrace();
 		}
 		for (Workout w : listaDeWorkouts) {
-			w.ejercicios = Ejercicio.mObtenerEjerciciosWorkout(w);
+			w.ejercicios = Ejercicio.fbObtenerEjerciciosWorkout(w);
 		}
 		return listaDeWorkouts;
 	}
