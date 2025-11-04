@@ -1,7 +1,5 @@
 package vista;
 
-import java.util.Collections;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -18,11 +16,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import javax.swing.DefaultComboBoxModel;
 
 public class HistoricoWorkouts extends JFrame {
@@ -106,10 +100,6 @@ public class HistoricoWorkouts extends JFrame {
 		lblWorkouts.setFont(new Font("Raleway", Font.BOLD, 30));
 
 		/************** TABLA HISTORIAL WORKOUTS **************/
-		modeloEjercicios = new DefaultTableModel(new String[] { "ID", "Nombre", "Descripción", "Descanso" }, 0);
-		// Ordenar por fecha
-		TableRowSorter<TableModel> sortEjercicios = new TableRowSorter<>(modeloEjercicios);
-		sortEjercicios.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
 
 		modeloEjercicios = new DefaultTableModel(new String[] { "Nombre Workout", "Nivel", "Tiempo Total",
 				"Tiempo Previsto", "Fecha", "% Ejercicios Completados" }, 0);

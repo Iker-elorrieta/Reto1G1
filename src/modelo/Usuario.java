@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -378,6 +379,8 @@ public class Usuario implements Serializable {
 
 	public void mCargarHistorialWorkouts(boolean conexion) throws Exception {
 		this.workouts = UsuWorkout.mCargarHistorialWorkouts(this,conexion);
+		this.workouts.sort(Comparator.comparing(UsuWorkout::getFecha).reversed());
+		
 	}
 
 	public static List<Usuario> mObtenerTodosUsuarios(boolean conexionInternet) {

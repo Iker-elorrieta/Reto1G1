@@ -122,26 +122,19 @@ public class Workout implements Serializable {
 	}
 
 	/**
-	 * Calcula el porcentaje de completado del workout en base al número de
-	 * ejercicios completados. Sólo se considera COMPLETADO al 100% si
-	 * ejerciciosCompletados >= total de ejercicios.
+	 * Calcula el porcentaje completado de un workout.
+	 * Si uw es null o no hay ejercicios, devuelve 0.
 	 */
-	public int calcularPorcentajeCompletado(int ejerciciosCompletados) {
-		int total = (this.ejercicios == null) ? 0 : this.ejercicios.size();
-		if (total <= 0)
-			return 0;
-		int pct = (int) Math.round((ejerciciosCompletados * 100.0) / total);
-		if (pct > 100)
-			pct = 100;
-		if (pct < 0)
-			pct = 0;
-		return pct;
-	}
-
 	public int calcularPorcentajeCompletado(UsuWorkout uw) {
-		if (uw == null)
-			return 0;
-		return calcularPorcentajeCompletado(uw.getEjerciciosCompletados());
+	    if (uw == null || this.ejercicios == null || this.ejercicios.isEmpty())
+	        return 0;
+
+	    int total = this.ejercicios.size();
+	    int completados = uw.getEjerciciosCompletados();
+
+	    return Math.max(0, Math.min(100,
+	        (int) Math.round((completados * 100.0) / total)
+	    ));
 	}
 
 	/************** Metodo CRUD **************/
