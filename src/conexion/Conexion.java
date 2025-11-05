@@ -20,14 +20,17 @@ public class Conexion {
 		FileInputStream serviceAccount;
 		Firestore firestore = null;
 		try {
+			// Abre el fichero JSON con las credenciales de la cuenta de servicio
 			serviceAccount = new FileInputStream(nombreJSON);
 		
-
+		// Construye las opciones de Firestore con el ID de proyecto y las credenciales leídas
 		FirestoreOptions firestoreOptions = FirestoreOptions.getDefaultInstance().toBuilder()
 				.setProjectId(IdDeProyecto).setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
+		// Obtiene el cliente de Firestore con la configuración anterior
 		firestore = firestoreOptions.getService();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			// Si no se encuentra el fichero de credenciales se captura la excepción.
+			// Aquí solo se imprime la traza; se devuelve null para indicar que la conexión no se realizó.
 			e.printStackTrace();
 		}
 		
