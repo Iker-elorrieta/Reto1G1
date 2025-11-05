@@ -1,9 +1,15 @@
 package modelo;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +20,9 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 
 import conexion.Conexion;
+import java.util.stream.Collectors;
 
-public class Usuario implements Serializable{
-
+public class Usuario implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -54,6 +60,7 @@ public class Usuario implements Serializable{
 		this.fec_nac = pFec_nac;
 		this.nivel = pNivel;
 		this.tipo = pTipo;
+		this.workouts = new ArrayList<>();
 	}
 
 	/************** Getters y Setters **************/
@@ -132,8 +139,41 @@ public class Usuario implements Serializable{
 
 	/************** Metodo CRUD **************/
 
+	public ArrayList<Usuario> datObtenerTodos() {
+		File file = new File("backups/usuarios.dat");
+		ArrayList<Usuario> lista = new ArrayList<>();
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+			Object obj = ois.readObject();
+			if (obj instanceof List<?>) {
+				for (Object o : (List<?>) obj) {
+					if (o instanceof Usuario) {
+						lista.add((Usuario) o);
+					}
+				}
+			}
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Error leyendo backups/usuarios.dat");
+			e.printStackTrace();
+		}
+		return lista;
+	}
+
+	public Usuario mObtenerUsuario(int idUsu, boolean conexionInternet) {
+		if (conexionInternet) {
+			return fbObtenerUsuario(idUsu);
+		} else {
+			ArrayList<Usuario> usuarios = datObtenerTodos();
+			for (Usuario u : usuarios) {
+				if (u.getIdUsuario().equals(idUsu + "")) {
+					return u;
+				}
+			}
+			return null;
+		}
+	}
+
 	// ********** READ **********
-	public Usuario mObtenerUsuario(int idUsu) {
+	public Usuario fbObtenerUsuario(int idUsu) {
 		Firestore conexion = null;
 
 		try {
@@ -161,7 +201,21 @@ public class Usuario implements Serializable{
 		return this;
 	}
 
-	public boolean mExisteUsuario(String email) throws Exception {
+	public boolean mExisteUsuario(String email, boolean conexionInternet) throws Exception {
+		if (conexionInternet) {
+			return fbExisteUsuario(email);
+		} else {
+			ArrayList<Usuario> usuarios = datObtenerTodos();
+			for (Usuario u : usuarios) {
+				if (u.getEmail().equals(email)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	public boolean fbExisteUsuario(String email) throws Exception {
 		Firestore conexion = Conexion.conectar();
 		var query = conexion.collection(collectionName).whereEqualTo(fieldEmail, email).get().get();
 		if (!query.isEmpty()) {
@@ -173,8 +227,33 @@ public class Usuario implements Serializable{
 		}
 	}
 
+	public void mAnadirUsuario(boolean conexionInternet) throws Exception {
+		if (conexionInternet) {
+			fbAnadirUsuario();
+		} else {
+			ArrayList<Usuario> usuarios = datObtenerTodos();
+			int maxId = 0;
+			for (Usuario u : usuarios) {
+				try {
+					int idNum = Integer.parseInt(u.getIdUsuario());
+					if (idNum > maxId) {
+						maxId = idNum;
+					}
+				} catch (NumberFormatException e) {
+					// Ignorar si algún usuario tiene un ID no numérico
+				}
+			}
+			int nuevoId = maxId + 1;
+			setIdUsuario(String.valueOf(nuevoId));
+			usuarios.add(this);
+			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("backups/usuarios.dat"))) {
+				oos.writeObject(usuarios);
+			}
+		}
+	}
+
 	// ********** CREATE **********
-	public void mAnadirUsuario() throws Exception {
+	public void fbAnadirUsuario() throws Exception {
 
 		Firestore conexion = Conexion.conectar();
 
@@ -212,7 +291,27 @@ public class Usuario implements Serializable{
 	}
 
 	// ********** UPDATE **********
-	public void mActualizarUsuario() throws Exception {
+	public void mActualizarUsuario(boolean conexion) throws Exception {
+		if (conexion) {
+			fbActualizarUsuario();
+		} else {
+			ArrayList<Usuario> usuarios = datObtenerTodos();
+			for (int i = 0; i < usuarios.size(); i++) {
+				if (usuarios.get(i).getIdUsuario().equals(this.getIdUsuario())) {
+					usuarios.set(i, this);
+					break;
+				}
+			}
+			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("backups/usuarios.dat"))) {
+				oos.writeObject(usuarios);
+			} catch (IOException e) {
+				System.out.println("Error escribiendo backups/usuarios.dat");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void fbActualizarUsuario() throws Exception {
 		Firestore conexion = null;
 
 		conexion = Conexion.conectar();
@@ -232,7 +331,29 @@ public class Usuario implements Serializable{
 	}
 
 	/************** LOGIN / VALIDAR USUARIO **************/
-	public boolean validarLogin(String email, String contrasena) throws Exception {
+	
+	public boolean validarLogin(String email, String contrasena, boolean conexionInternet) throws Exception {
+		if (conexionInternet) {
+			return fbvalidarLogin(email, contrasena);
+		} else {
+			ArrayList<Usuario> usuarios = datObtenerTodos();
+			for (Usuario u : usuarios) {
+				if (u.getEmail().equals(email) && u.getContrasena().equals(contrasena)) {
+					setIdUsuario(u.getIdUsuario());
+					setNombre(u.getNombre());
+					setApellidos(u.getApellidos());
+					setEmail(u.getEmail());
+					setContrasena(u.getContrasena());
+					setFec_nac(u.getFec_nac());
+					setNivel(u.getNivel());
+					setTipo(u.getTipo());
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	public boolean fbvalidarLogin(String email, String contrasena) throws Exception {
 		Firestore conexion = Conexion.conectar();
 		var query = conexion.collection(collectionName).whereEqualTo(fieldEmail, email).get().get();
 		if (!query.isEmpty()) {
@@ -255,12 +376,36 @@ public class Usuario implements Serializable{
 
 		return false;
 	}
-	
-	public void mCargarHistorialWorkouts() throws Exception {
-		this.workouts = UsuWorkout.mCargarHistorialWorkouts(this);
+
+	public void mCargarHistorialWorkouts(boolean conexion) throws Exception {
+		this.workouts = UsuWorkout.mCargarHistorialWorkouts(this,conexion);
+		this.workouts.sort(Comparator.comparing(UsuWorkout::getFecha).reversed());
+		
 	}
-	
-	public static List<Usuario> mObtenerTodosUsuarios() {
+
+	public static List<Usuario> mObtenerTodosUsuarios(boolean conexionInternet) {
+		if (conexionInternet) {
+			return fbObtenerTodosUsuarios(true);
+		} else {
+			ArrayList<Usuario> usuarios = new ArrayList<>();
+			File file = new File("backups/usuarios.dat");
+			try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+				Object obj = ois.readObject();
+				if (obj instanceof List<?>) {
+					for (Object o : (List<?>) obj) {
+						if (o instanceof Usuario) {
+							usuarios.add((Usuario) o);
+						}
+					}
+				}
+			} catch (IOException | ClassNotFoundException e) {
+				System.out.println("Error leyendo backups/usuarios.dat");
+			 e.printStackTrace();
+			}
+			return usuarios;
+		}
+	}
+	public static List<Usuario> fbObtenerTodosUsuarios(boolean conexionInternet) {
 		List<Usuario> listaUsuarios = new ArrayList<>();
 		Firestore conexion = null;
 		try {
@@ -293,10 +438,10 @@ public class Usuario implements Serializable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		for(Usuario u : listaUsuarios) {
+
+		for (Usuario u : listaUsuarios) {
 			try {
-				u.mCargarHistorialWorkouts();
+				u.mCargarHistorialWorkouts(conexionInternet);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -305,5 +450,58 @@ public class Usuario implements Serializable{
 		return listaUsuarios;
 	}
 
+	public boolean mEvaluarNivel(boolean conexion) {
+		try {
+			ArrayList<Workout> todos = Workout.mObtenerTodosWorkouts(conexion);
+			if (todos == null || todos.isEmpty())
+				return false;
+			int nivelActual = this.nivel;
+			List<Workout> nivelWorkouts = todos.stream().filter(w -> w.getNivel() == nivelActual)
+					.collect(Collectors.toList());
+			if (nivelWorkouts.isEmpty())
+				return false; // no hay workouts para este nivel
+
+			// Asegurarse de tener el historial
+			try {
+				this.mCargarHistorialWorkouts(conexion);
+			} catch (Exception ignore) {
+			}
+
+			// Para cada workout del nivel, comprobar si existe en el historial del usuario
+			// con el 100% de ejercicios completados
+			for (Workout w : nivelWorkouts) {
+				boolean completadoAl100 = false;
+				if (this.workouts != null) {
+					for (UsuWorkout uw : this.workouts) {
+						if (uw.getWorkout() != null && w.getIdWorkout() != null
+								&& w.getIdWorkout().equals(uw.getWorkout().getIdWorkout())) {
+							int pct = w.calcularPorcentajeCompletado(uw);
+							if (pct >= 100) {
+								completadoAl100 = true;
+								break;
+							}
+						}
+					}
+				}
+				if (!completadoAl100) {
+					return false; // falta al menos un workout del nivel completado al 100%
+				}
+			}
+
+			// Si llegamos aquí, el usuario completó todos los workouts del nivel al 100%
+			if (this.nivel < 5) {
+				this.nivel = this.nivel + 1;
+				try {
+					this.mActualizarUsuario(conexion);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
 }

@@ -7,10 +7,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.text.SimpleDateFormat;
-
+import java.io.IOException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -26,13 +32,21 @@ import javax.swing.JTextField;
 import modelo.Ejercicio;
 import modelo.Usuario;
 import modelo.Workout;
-import modelo.Serie;
 import modelo.UsuWorkout;
 import vista.HistoricoWorkouts;
 import vista.Inicio;
 import vista.PantallaEjercicio;
 import vista.Workouts;
 
+/**
+ * Controlador principal de la aplicación: gestiona la interacción entre las
+ * vistas (Inicio, Workouts, Ejercicio, Historial) y el modelo (Usuario,
+ * Workout, Ejercicio).
+ *
+ * Se encarga de registrar listeners, manejar acciones de usuario, controlar el
+ * flujo de inicio de sesión/registro, iniciar workouts y monitorizar la
+ * conexión a internet.
+ */
 public class ControladorInicio extends MouseAdapter implements ActionListener, ListSelectionListener {
 
 	private Inicio vistaInicio;
@@ -43,6 +57,12 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	private HistoricoWorkouts vistaHistorico;
 	private PantallaEjercicio vistaEjercicio;
 
+	private volatile boolean conexionInternet = false;
+	private ScheduledExecutorService monitorConexion;
+
+	private HiloWorkout hiloWorkout;
+	private Workout workoutEnCurso;
+
 	public ControladorInicio(Inicio vistaInicio) {
 		this.vistaInicio = vistaInicio;
 		vistaWorkouts = new Workouts();
@@ -52,27 +72,30 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		inicializarControlador();
 	}
 
+
 	/**
 	 * Inicializa y registra todos los listeners y valores iniciales de los paneles.
+	 * Aquí se asocian comandos de acción y manejadores a botones y componentes.
 	 */
 	private void inicializarControlador() {
 
-		// Inicio
+		// Inicio: detectar click sobre la ventana para mostrar login
 		vistaInicio.getContentPane().addMouseListener(this);
 		vistaInicio.getPanelLogoGrande().addMouseListener(this);
-		// Panel Login
+
+		// Panel Login: configurar botón y enlace a registro
 		vistaInicio.getPanelLogin().getBtnIniciarSesion().setActionCommand("INICIAR_SESION");
 		vistaInicio.getPanelLogin().getBtnIniciarSesion().addActionListener(this);
 		vistaInicio.getPanelLogin().getLblRegistrar().addMouseListener(this);
 
-		// Panel Registro
+		// Panel Registro: botones de registrar / atrás
 		vistaInicio.getPanelRegistro().getBtnRegistrar().setActionCommand("REGISTRAR");
 		vistaInicio.getPanelRegistro().getBtnRegistrar().addActionListener(this);
 
 		vistaInicio.getPanelRegistro().getBtnAtras().setActionCommand("ATRAS");
 		vistaInicio.getPanelRegistro().getBtnAtras().addActionListener(this);
 
-		// Workouts
+		// Workouts: desconectar, selección de tabla, filtrado por nivel, edición perfil
 		vistaWorkouts.getBtnDesconectar().setActionCommand("DESCONECTAR");
 		vistaWorkouts.getBtnDesconectar().addActionListener(this);
 
@@ -84,8 +107,18 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaWorkouts.getBtnEditarPerfil().setActionCommand("EDITAR_PERFIL");
 		vistaWorkouts.getBtnEditarPerfil().addActionListener(this);
 
-		vistaWorkouts.getBtnEmpezarWorkout().setActionCommand("EMPEZAR_WORKOUT");
+		vistaWorkouts.getBtnEmpezarWorkout().setActionCommand("ABRIR_PANTALLA_EJERCICIO");
 		vistaWorkouts.getBtnEmpezarWorkout().addActionListener(this);
+
+		// Vista Ejercicio: gestionar botones de salir, empezar/pausar y siguiente
+		vistaEjercicio.getBtnSalir().setActionCommand("SALIR_EJERCICIO");
+		vistaEjercicio.getBtnSalir().addActionListener(this);
+
+		vistaEjercicio.getBtnEmpezar().setActionCommand("EMPEZAR_PAUSAR_REANUDAR");
+		vistaEjercicio.getBtnEmpezar().addActionListener(this);
+
+		vistaEjercicio.getBtnSiguiente().setActionCommand("SIGUIENTE_EJERCICIO");
+		vistaEjercicio.getBtnSiguiente().addActionListener(this);
 
 		// Historial de Workouts
 		vistaWorkouts.getBtnHistoricoWorkouts().setActionCommand("HISTORICO_WORKOUTS");
@@ -94,10 +127,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		vistaHistorico.getBtnAtras().setActionCommand("ATRAS_HISTORIALWORKOUTS");
 		vistaHistorico.getBtnAtras().addActionListener(this);
 
+		// Inicializar placeholders en formularios
 		vVaciarLogin();
 		vVaciarRegistro();
 
+		// Iniciar el monitor de conexión a internet en background
+		iniciarMonitorConexionInternet();
 	}
+
 
 	/**
 	 * Gestiona las acciones disparadas por los componentes (botones, combos).
@@ -105,7 +142,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String cmd = e.getActionCommand();
+		final String cmd = e.getActionCommand();
 
 		switch (cmd) {
 		case "MOSTRAR_LOGIN":
@@ -121,12 +158,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			if (usuario.getEmail() != null) {
 				vistaInicio.setVisible(false);
 			} else {
+				// Volver al panel de login desde registro
 				vVaciarLogin();
 				vistaInicio.getPanelRegistro().setVisible(false);
 				vistaInicio.getPanelLogin().setVisible(true);
 			}
 			break;
 		case "ATRAS_HISTORIALWORKOUTS":
+			// Volver de historial a lista de workouts
 			vistaHistorico.setVisible(false);
 			vistaWorkouts.setVisible(true);
 			break;
@@ -142,6 +181,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			mFiltrarNiveles();
 			break;
 		case "WORKOUT_SELECCIONADO":
+			// Cargar ejercicios del workout seleccionado en la vista
 			mCargarEjercicios(mWorkoutSeleccionado());
 			break;
 		case "EDITAR_PERFIL":
@@ -149,27 +189,46 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			break;
 		case "HISTORICO_WORKOUTS":
 			try {
-				usuario.mCargarHistorialWorkouts();
+				// Cargar historial desde modelo
+				usuario.mCargarHistorialWorkouts(conexionInternet);
 				mRellenarTablaHistorico();
 				vistaHistorico.setVisible(true);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			break;
-		case "EMPEZAR_WORKOUT":
-			vistaWorkouts.setVisible(false);
-			vistaEjercicio.setVisible(true);
-			mWorkoutSeleccionado().getEjercicios().get(0).setActual(true);
-			vistaEjercicio.getLblNombreEjercicio().setText(mEjercicioActual().getNombre());
-			vistaEjercicio.getLblNombreWorkout().setText(mWorkoutSeleccionado().getNombre());
-			vistaEjercicio.getLblEjercicioDescripcion().setText(mEjercicioActual().getDescripcion());
-			vistaEjercicio.getLblWorkoutDescripcion().setText(mWorkoutSeleccionado().getDescripcion());
-			vistaEjercicio.getPanelSeries().removeAll();
-			for (Serie s : mEjercicioActual().getSeries()) {
-				vistaEjercicio.getPanelSeries().add(vistaEjercicio.crearSerie(s.getNombre(), s.getFoto(),
-						mEjercicioActual().getSeries().indexOf(s)));
+
+		case "ABRIR_PANTALLA_EJERCICIO":
+			abrirPantallaEjercicio();
+			break;
+
+		case "EMPEZAR_PAUSAR_REANUDAR":
+			manejarEmpezarPausarReanudar();
+			break;
+
+		case "SIGUIENTE_EJERCICIO":
+			if (hiloWorkout != null)
+				hiloWorkout.siguiente();
+			break;
+
+		case "SALIR_EJERCICIO":
+			// Controla la finalización del workout según estado del hilo
+			if (hiloWorkout != null) {
+				// Si no ha empezado, salir directo sin mostrar resumen
+				if (!hiloWorkout.isRunning()) {
+					vistaEjercicio.setVisible(false);
+					vistaWorkouts.setVisible(true);
+					hiloWorkout = null;
+				} else {
+					// Si está en curso, finalizar de forma inmediata mostrando el resumen
+					hiloWorkout.finalizarInmediato();
+				}
+			} else {
+				vistaEjercicio.setVisible(false);
+				vistaWorkouts.setVisible(true);
 			}
 			break;
+
 		default:
 			break;
 		}
@@ -178,6 +237,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 	@Override
 	public void valueChanged(ListSelectionEvent event) {
+		// Detecta selección en la tabla de workouts y lanza la acción correspondiente
 		if (event.getSource() == vistaWorkouts.getTableWorkouts().getSelectionModel()) {
 			actionPerformed(new ActionEvent(vistaWorkouts.getTableWorkouts(), ActionEvent.ACTION_PERFORMED,
 					"WORKOUT_SELECCIONADO"));
@@ -190,8 +250,10 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			actionPerformed(new ActionEvent(vistaInicio.getPanelLogin().getLblRegistrar(), ActionEvent.ACTION_PERFORMED,
 					"MOSTRAR_REGISTRO"));
 		} else if (e.getSource() == vistaWorkouts.getTableWorkouts()) {
+			// Si se hace click en la tabla, puede abrir el vídeo correspondiente
 			mAbrirVideo(e);
 		} else if (e.getSource() == vistaInicio.getPanelLogoGrande() || e.getSource() == vistaInicio.getContentPane()) {
+			// Click en logo muestra login
 			mMostrarPanelLogin();
 		}
 	}
@@ -212,6 +274,9 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	/**
 	 * Valida campos de login, intenta autenticar al usuario y carga la vista de
 	 * workouts si la autenticación es correcta.
+	 *
+	 * - Utiliza placeholders para marcar campos vacíos.
+	 * - Llama a usuario.validarLogin que puede usar la conexión a internet.
 	 */
 	public void mIniciarSesion() {
 		JTextField txtEmail = vistaInicio.getPanelLogin().getTextFieldEmail();
@@ -239,16 +304,20 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 		// si esta bien
 		try {
-			if (usuario.validarLogin(email, contrasena)) {
+			if (usuario.validarLogin(email, contrasena, conexionInternet)) {
+				// Cargar workouts y datos del usuario en la vista
 				mCargarWorkouts();
+				mostrarDatosUsuario();
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
 				iniciarBackup();
 			} else {
+				// Mostrar error si credenciales incorrectas
 				vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
 				vistaInicio.getPanelLogin().getLblError().setText("Correo electrónico o contraseña incorrectos");
 			}
 		} catch (Exception e) {
+			// Error de conexión/BD
 			vistaInicio.getPanelLogin().getLblError().setForeground(Color.RED);
 			vistaInicio.getPanelLogin().getLblError().setText("Error al conectar con la base de datos");
 		}
@@ -258,6 +327,9 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	/**
 	 * Valida y procesa el registro o edición de usuario. Maneja placeholders y
 	 * muestra errores en la vista en caso de fallo.
+	 *
+	 * - Si ya existe un usuario en memoria, actúa como "editar perfil".
+	 * - Si no, registra un nuevo usuario (validando que el email no exista).
 	 */
 	public void mRegistro() {
 		JTextField txtNombre = vistaInicio.getPanelRegistro().getTxtNombre();
@@ -279,6 +351,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 		boolean passwordPH = Boolean.TRUE.equals(txtContrasena.getClientProperty("placeholder"));
 		boolean fechaPH = Boolean.TRUE.equals(dateField.getClientProperty("placeholder"));
 
+		// Validaciones y marcadores visuales
 		if (nombre.isEmpty() || nombrePH) {
 			vistaInicio.placeholder("Campo obligatorio", Color.RED, txtNombre);
 		}
@@ -303,26 +376,29 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			return;
 		}
 		try {
+			// Si hay usuario activo, actualizar perfil
 			if (usuario.getEmail() != null) {
 				usuario.setNombre(nombre);
 				usuario.setApellidos(apellidos);
 				usuario.setContrasena(password);
 				usuario.setFec_nac(fechaNacimiento);
-				usuario.mActualizarUsuario();
+				usuario.mActualizarUsuario(conexionInternet);
 
 				vistaInicio.setVisible(false);
 				vistaWorkouts.setVisible(true);
 				return;
 			}
-			if (usuario.mExisteUsuario(email)) {
+			// Comprobar si ya existe el email
+			if (usuario.mExisteUsuario(email, conexionInternet)) {
 				vistaInicio.getPanelRegistro().getLblError().setForeground(Color.RED);
 				vistaInicio.getPanelRegistro().getLblError().setText("El correo electrónico ya está registrado");
 				return;
 			}
-
+			
+			// Crear y persistir nuevo usuario
 			Usuario nuevoUsuario = new Usuario(nombre, apellidos, email, password, fechaNacimiento, 0, "cliente");
 
-			nuevoUsuario.mAnadirUsuario();
+			nuevoUsuario.mAnadirUsuario(conexionInternet);
 			vistaInicio.getPanelRegistro().setVisible(false);
 			vistaInicio.getPanelLogin().setVisible(true);
 			vVaciarLogin();
@@ -339,12 +415,14 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	/**
 	 * Carga la lista de workouts disponibles para el nivel del usuario y prepara el
 	 * combobox de filtrado.
+	 * - Obtiene los workouts desde el modelo (puede usar conexión remota o local).
 	 */
 	public void mCargarWorkouts() {
 		vistaWorkouts.getModeloWorkouts().setRowCount(0);
-		workouts = Workout.mObtenerWorkouts(usuario.getNivel());
+		workouts = Workout.mObtenerWorkouts(usuario.getNivel(), conexionInternet);
 		mRellenarTablaWorkouts(0);
 
+		// Preparar combobox con "Todos" + niveles disponibles hasta el del usuario
 		vistaWorkouts.getModeloComboBox().removeAllElements();
 		vistaWorkouts.getModeloComboBox().addElement("Todos los niveles");
 		for (int i = 0; i <= usuario.getNivel(); i++) {
@@ -373,12 +451,15 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 			}
 		}
+		// Ocultar la sección de ejercicios hasta que se seleccione un workout
 		mMostrarOcultarEjercicios(false);
 	}
 
 	/**
 	 * Rellena la tabla del historial de workouts del usuario, calculando tiempos y
 	 * porcentajes.
+	 *
+	 * - Formatea fechas y tiempos para presentación en la tabla.
 	 */
 	private void mRellenarTablaHistorico() {
 		DefaultTableModel modelo = vistaHistorico.getModeloEjercicios();
@@ -391,7 +472,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 
 			String nombre = w.getNombre();
 			int tiempoTotal = uw.getTiempoTotal();
-
+			
 			String nivelStr = "Desconocido";
 			if (w != null) {
 				int nv = w.getNivel();
@@ -415,21 +496,13 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				}
 			}
 
-			// Calcular tiempo previsto
-			int tiempoPrevisto = 0;
-			for (Ejercicio e : w.getEjercicios()) {
-				for (int i = 0; i < e.getSeries().size(); i++) {
-					Serie s = e.getSeries().get(i);
-					tiempoPrevisto += s.getTiempo();
-					if (i < e.getSeries().size() - 1) {
-						tiempoPrevisto += e.getTiempoDescanso();
-					}
-				}
-			}
+			// Calcular tiempo previsto (usar método centralizado en Workout)
+			int tiempoPrevisto = (w != null) ? w.getTiempoPrevistoSegundos() : 0;
 
 			String fecha = sdf.format(uw.getFecha());
 
-			int porcentaje = (int) Math.round((uw.getEjerciciosCompletados() * 100.0) / w.getEjercicios().size());
+			// Porcentaje completado basado en número de ejercicios completados
+			int porcentaje = (w != null) ? w.calcularPorcentajeCompletado(uw) : 0;
 			String tiempoTotalStr = String.format("%02d:%02d", tiempoTotal / 60, tiempoTotal % 60);
 			String tiempoPrevistoStr = String.format("%02d:%02d", tiempoPrevisto / 60, tiempoPrevisto % 60);
 
@@ -467,6 +540,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	/**
 	 * Abre el vídeo del workout si se hace clic en la columna correspondiente de la
 	 * tabla.
+	 *
+	 * - Comprueba la columna del modelo para identificar la celda de video.
 	 */
 	public void mAbrirVideo(MouseEvent e) {
 		int colView = vistaWorkouts.getTableWorkouts().columnAtPoint(e.getPoint());
@@ -485,6 +560,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 				return;
 
 			try {
+				// Abrir URL en el navegador del sistema
 				Desktop.getDesktop().browse(new URI(url));
 
 			} catch (Exception ex) {
@@ -496,20 +572,25 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	/**
 	 * Carga los ejercicios de un workout seleccionado y los muestra en la tabla
 	 * correspondiente.
+	 *
+	 * - Si no hay ejercicios en memoria y hay conexión, los obtiene remotamente.
 	 */
 	public void mCargarEjercicios(Workout workout) {
 		if (workout == null)
 			return;
 		vistaWorkouts.getModeloEjercicios().setRowCount(0);
-		ArrayList<Ejercicio> ejerciciosArray = Ejercicio.mObtenerEjerciciosWorkout(workout);
-		workout.setEjercicios(ejerciciosArray);
-		for (int i = 0; i < ejerciciosArray.size(); i++) {
+		if (workout.getEjercicios().size() == 0 && conexionInternet) {
+			ArrayList<Ejercicio> ejerciciosArray = Ejercicio.fbObtenerEjerciciosWorkout(workout);
+			workout.setEjercicios(ejerciciosArray);
+
+		}
+		for (int i = 0; i < workout.getEjercicios().size(); i++) {
 			String[] fila = new String[6];
-			fila[0] = ejerciciosArray.get(i).getIdEjercicio();
-			fila[1] = ejerciciosArray.get(i).getNombre();
-			fila[2] = ejerciciosArray.get(i).getDescripcion();
-			fila[3] = String.format("%02d:%02d", ejerciciosArray.get(i).getTiempoDescanso() / 60,
-					ejerciciosArray.get(i).getTiempoDescanso() % 60);
+			fila[0] = workout.getEjercicios().get(i).getIdEjercicio();
+			fila[1] = workout.getEjercicios().get(i).getNombre();
+			fila[2] = workout.getEjercicios().get(i).getDescripcion();
+			fila[3] = String.format("%02d:%02d", workout.getEjercicios().get(i).getTiempoDescanso() / 60,
+					workout.getEjercicios().get(i).getTiempoDescanso() % 60);
 			vistaWorkouts.getModeloEjercicios().addRow(fila);
 		}
 		mMostrarOcultarEjercicios(true);
@@ -572,6 +653,8 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	/**
 	 * Valida de forma básica la estructura de un correo electrónico. Retorna true
 	 * si parece válido, false en caso contrario.
+	 *
+	 * - No es un validador exhaustivo, pero previene errores comunes.
 	 */
 	private boolean emailValido(String email) {
 		if (email == null)
@@ -682,6 +765,7 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 			vistaInicio.getPanelRegistro().getTxtContrasena().setText(usuario.getContrasena());
 			vistaInicio.getPanelRegistro().getDateChooser().setDate(usuario.getFec_nac());
 
+			// Reaplicar placeholders (visual)
 			vistaInicio.placeholder("Introduce tu nombre", Color.GRAY, vistaInicio.getPanelRegistro().getTxtNombre());
 			vistaInicio.placeholder("Introduce tus apellidos", Color.GRAY,
 					vistaInicio.getPanelRegistro().getTxtApellidos());
@@ -698,12 +782,149 @@ public class ControladorInicio extends MouseAdapter implements ActionListener, L
 	}
 
 	/**
-	 * Configura la vista de registro para modo "nuevo usuario" o "editar perfil"
-	 * según si hay un usuario activo.
+	 * Inicia el hilo de backup si hay conexión a internet. Si no hay conexión,
+	 * muestra mensaje en la vista.
 	 */
 	public void iniciarBackup() {
-		HiloBackup hiloBackup = new HiloBackup(vistaWorkouts.getLblBackups());
-		hiloBackup.start();
+		if(conexionInternet) {
+			HiloBackup hiloBackup = new HiloBackup(vistaWorkouts.getLblBackups());
+			hiloBackup.start();
+		} else {
+			// Mostrar mensaje de que se trabaja desde backup local
+			vistaWorkouts.getLblBackups().setText("Sin conexión. Datos desde backup");
+			vistaWorkouts.getLblBackups().setForeground(Color.white);
+		}
+	}
+
+	/**
+	 * Abre la pantalla de ejercicio, carga datos del workout/ejercicio y prepara
+	 * paneles/cronómetros.
+	 *
+	 * - Crea un HiloWorkout que gestiona los cronómetros y la lógica del workout.
+	 */
+	private void abrirPantallaEjercicio() {
+		Workout w = mWorkoutSeleccionado();
+		if (w == null)
+			return;
+		workoutEnCurso = w;
+		// Asegurar ejercicios cargados
+		if (workoutEnCurso.getEjercicios() == null || workoutEnCurso.getEjercicios().isEmpty()) {
+			ArrayList<Ejercicio> ejerciciosArray = Ejercicio.fbObtenerEjerciciosWorkout(workoutEnCurso);
+			workoutEnCurso.setEjercicios(ejerciciosArray);
+		}
+
+		// Datos de cabecera workout
+		vistaEjercicio.getLblNombreWorkout().setText(workoutEnCurso.getNombre());
+		vistaEjercicio.getLblWorkoutDescripcion().setText(workoutEnCurso.getDescripcion());
+
+		// Construir paneles de series por ejercicio y mostrar el primero
+		vistaEjercicio.panelSeriesPorEjercicio.clear();
+		for (Ejercicio ej : workoutEnCurso.getEjercicios()) {
+			vistaEjercicio.panelSeriesPorEjercicio.add(vistaEjercicio.crearPanelSeriesEjercicio(ej));
+		}
+		if (!workoutEnCurso.getEjercicios().isEmpty()) {
+			Ejercicio ej0 = workoutEnCurso.getEjercicios().get(0);
+			vistaEjercicio.getLblNombreEjercicio().setText(ej0.getNombre());
+			vistaEjercicio.getLblEjercicioDescripcion().setText(ej0.getDescripcion());
+			vistaEjercicio.getLblCronometroDescanso().setText(formatearSeg(ej0.getTiempoDescanso()));
+			vistaEjercicio.getLblCronometroPreparacion().setText("00:05");
+			vistaEjercicio.mostrarPanelSeries(0);
+		}
+
+		// Inicialización de labels y botones en la pantalla de ejercicio
+		vistaEjercicio.getLblCronometroWorkout().setText("00:00");
+		vistaEjercicio.getLblCronometroEjercicio().setText("00:00");
+		vistaEjercicio.getBtnEmpezar().setText("Empezar");
+		vistaEjercicio.getBtnSiguiente().setVisible(true);
+		vistaEjercicio.getBtnSiguiente().setEnabled(false);
+
+		// Crear gestor de cronos (pasar usuario, vistaWorkouts y referencia al
+		// controlador para callback)
+		hiloWorkout = new HiloWorkout(vistaEjercicio, workoutEnCurso, usuario, vistaWorkouts, this);
+
+		vistaWorkouts.setVisible(false);
+		vistaEjercicio.setVisible(true);
+	}
+
+	/**
+	 * Gestiona los estados del botón empezar/pausar/reanudar delegando al hilo que
+	 * controla el workout.
+	 */
+	private void manejarEmpezarPausarReanudar() {
+		if (hiloWorkout == null)
+			return;
+		if (!hiloWorkout.isRunning()) {
+			hiloWorkout.start();
+			vistaEjercicio.getBtnEmpezar().setText("Pausar");
+			return;
+		}
+		if (hiloWorkout.isPaused()) {
+			hiloWorkout.reanudar();
+			vistaEjercicio.getBtnEmpezar().setText("Pausar");
+		} else {
+			hiloWorkout.pause();
+			vistaEjercicio.getBtnEmpezar().setText("Reanudar");
+		}
+	}
+
+	private String formatearSeg(int segundos) {
+		int mm = Math.max(0, segundos) / 60;
+		int ss = Math.max(0, segundos) % 60;
+		return String.format("%02d:%02d", mm, ss);
+	}
+
+	public void mostrarDatosUsuario() {
+		vistaWorkouts.getLblNivel().setText("Nivel: " + usuario.getNivel());
+	}
+	public void terminarWorkout() {
+		hiloWorkout = null;
+	}
+	
+
+	public boolean tieneConexionInternet() {
+		return conexionInternet;
+	}
+
+	/**
+	 * Inicia un monitor en segundo plano que comprueba la conexion.
+	 *
+	 * - Utiliza un ScheduledExecutorService para comprobar cada 15s la conexión a
+	 *   Internet y actualizar la variable conexionInternet.
+	 */
+	private void iniciarMonitorConexionInternet() {
+		if (monitorConexion != null)
+			return;
+		monitorConexion = Executors.newSingleThreadScheduledExecutor(r -> {
+			Thread t = new Thread(r, "MonitorConexionInternet");
+			t.setDaemon(true);
+			return t;
+		});
+		// Comprobar inmediatamente y luego cada 15s
+		monitorConexion.scheduleAtFixedRate(() -> {
+			boolean ok = comprobarConexionInternet();
+			if (ok != conexionInternet) {
+				// Si cambia la conexión, aquí podrías recargar datos o notificar a la UI
+				// recargarDatos();
+			}
+			conexionInternet = ok;
+
+		}, 0, 15, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * Comprueba de forma ligera si hay conexión a internet intentando abrir un
+	 * socket hacia 8.8.8.8:53 (DNS). Devuelve true si la conexión es posible.
+	 *
+	 * - Método rápido y sin dependencias externas; no garantiza acceso HTTP.
+	 */
+	private boolean comprobarConexionInternet() {
+		SocketAddress address = new InetSocketAddress("8.8.8.8", 53);
+		try (Socket socket = new Socket()) {
+			socket.connect(address, 2000); // timeout 2s
+			return true;
+		} catch (IOException ex) {
+			return false;
+		}
 	}
 
 }

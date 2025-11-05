@@ -27,6 +27,11 @@ public class Ejercicio implements Serializable{
     private List<Serie> series = new ArrayList<>();
     private boolean actual;
     
+    private static String collectionWorkouts = "workouts";
+    private static String collectionEjercicios = "ejercicios";
+    private static String fieldNombre = "nombre";
+    private static String fieldDescripcion = "descripcion";
+    private static String fieldTiempoDescanso = "tiempo_descanso";
 	/************** Constructores **************/
     
     public Ejercicio() {
@@ -90,8 +95,9 @@ public class Ejercicio implements Serializable{
 	public void setActual(boolean actual) {
 		this.actual = actual;
 	}
-
-	public static ArrayList<Ejercicio> mObtenerEjerciciosWorkout(Workout workout) {
+	
+	//Recupera desde Firestore todos los ejercicios de un workout dado.
+	public static ArrayList<Ejercicio> fbObtenerEjerciciosWorkout(Workout workout) {
 		Firestore conexion = null;
 
 		ArrayList<Ejercicio> listaDeEjercicios = new ArrayList<Ejercicio>();
@@ -99,20 +105,22 @@ public class Ejercicio implements Serializable{
 		try {
 			conexion = Conexion.conectar();
 
-			ApiFuture<QuerySnapshot> query = conexion.collection("workouts").document(workout.getIdWorkout()).collection("ejercicios").get();
+			ApiFuture<QuerySnapshot> query = conexion.collection(collectionWorkouts).document(workout.getIdWorkout()).collection(collectionEjercicios).get();
 
+			// Esperar el resultado de la consulta (bloqueante) y obtener los documentos
 			QuerySnapshot querySnapshot = query.get();
 			List<QueryDocumentSnapshot> ejercicios = querySnapshot.getDocuments();
 			for (QueryDocumentSnapshot ejercicio : ejercicios) {
 
+				// Construir objeto Ejercicio a partir de los datos del documento
 				Ejercicio w = new Ejercicio();
 				w.setIdEjercicio(ejercicio.getId());
-				w.setNombre(ejercicio.getString("nombre"));
-				w.setDescripcion(ejercicio.getString("descripcion"));
-				w.setTiempoDescanso(ejercicio.getLong("tiempo_descanso").intValue());
-				
-				
-				
+				w.setNombre(ejercicio.getString(fieldNombre));
+				w.setDescripcion(ejercicio.getString(fieldDescripcion));
+				// El campo tiempo_descanso se almacena en Firestore como número (Long), lo convertimos a int
+				w.setTiempoDescanso(ejercicio.getLong(fieldTiempoDescanso).intValue());
+										
+				// Añadir a la lista local
 				listaDeEjercicios.add(w);
 			}
 			conexion.close();
@@ -124,11 +132,13 @@ public class Ejercicio implements Serializable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			// Captura genérica para no romper la aplicación; en producción
+			// podría lanzarse o gestionarse de otra forma.
 			e.printStackTrace();
 		}
+		// Por cada ejercicio obtenido, cargar sus series asociadas.
 		for (Ejercicio ej : listaDeEjercicios) {
-			ej.series = Serie.mObtenerSeriesEjercicio(workout,ej);
+			ej.series = Serie.fbObtenerSeriesEjercicio(workout,ej);
 		}
 
 		return listaDeEjercicios;

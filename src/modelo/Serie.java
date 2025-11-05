@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JLabel;
+
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
@@ -25,6 +27,14 @@ public class Serie implements Serializable {
     private String foto;
     private int tiempo; 
     private boolean actual;
+    private JLabel cronometro;
+    private static String collectionWorkouts = "workouts";
+    private static String collectionEjercicios = "ejercicios";
+    private static String collectionName = "series";
+    private static String fieldNombre = "nombre";
+    private static String fieldFoto = "foto";
+    private static String fieldTiempo = "tiempo";
+    
 
     
     /************** Constructores **************/
@@ -82,8 +92,18 @@ public class Serie implements Serializable {
 	public void setActual(boolean actual) {
 		this.actual = actual;
 	}
+	
+	
 
-	public static List<Serie> mObtenerSeriesEjercicio(Workout workout,Ejercicio ejercicio) {
+	public JLabel getCronometro() {
+		return cronometro;
+	}
+
+	public void setCronometro(JLabel cronometro) {
+		this.cronometro = cronometro;
+	}
+
+	public static List<Serie> fbObtenerSeriesEjercicio(Workout workout,Ejercicio ejercicio) {
 		Firestore conexion = null;
 
 		ArrayList<Serie> listaSeries = new ArrayList<Serie>();
@@ -91,7 +111,7 @@ public class Serie implements Serializable {
 		try {
 			conexion = Conexion.conectar();
 
-			ApiFuture<QuerySnapshot> query = conexion.collection("workouts").document(workout.getIdWorkout()).collection("ejercicios").document(ejercicio.getIdEjercicio()).collection("series").get();
+			ApiFuture<QuerySnapshot> query = conexion.collection(collectionWorkouts).document(workout.getIdWorkout()).collection(collectionEjercicios).document(ejercicio.getIdEjercicio()).collection(collectionName).get();
 
 			QuerySnapshot querySnapshot = query.get();
 			List<QueryDocumentSnapshot> series = querySnapshot.getDocuments();
@@ -99,9 +119,9 @@ public class Serie implements Serializable {
 
 				Serie s = new Serie();
 				s.setIdSerie(serie.getId());
-				s.setNombre(serie.getString("nombre"));
-				s.setFoto(serie.getString("foto"));
-				s.setTiempo(serie.getLong("tiempo").intValue());		
+				s.setNombre(serie.getString(fieldNombre));
+				s.setFoto(serie.getString(fieldFoto));
+				s.setTiempo(serie.getLong(fieldTiempo).intValue());		
 				listaSeries.add(s);
 			}
 			conexion.close();

@@ -46,6 +46,7 @@ public class Workouts extends JFrame {
 	private DefaultComboBoxModel<String> modeloComboBox = new DefaultComboBoxModel<String>();
 	private JComboBox<String> comboBox;
 	private JLabel lblBackups;
+	private JLabel lblNivel;
 
 	public Workouts() {
 		setTitle("Squad Gym - Workouts");
@@ -163,7 +164,7 @@ public class Workouts extends JFrame {
 		// Ordenar por fecha de inicio
 		TableRowSorter<TableModel> sort = new TableRowSorter<>(modeloWorkouts);
 		tableWorkouts.setRowSorter(sort);
-		sort.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.ASCENDING)));
+		sort.setSortKeys(Collections.singletonList(new RowSorter.SortKey(1, SortOrder.DESCENDING)));
 
 		JScrollPane scrollPaneWorkouts = new JScrollPane();
 		scrollPaneWorkouts.setBounds(327, 91, 647, 208);
@@ -229,6 +230,12 @@ public class Workouts extends JFrame {
 		lblBackups.setBounds(10, 417, 284, 14);
 		lblBackups.setFont(new Font("Raleway", Font.BOLD, 15));
 		panelIzquierda.add(lblBackups);
+		
+		lblNivel = new JLabel("");
+		lblNivel.setForeground(new Color(255, 255, 255));
+		lblNivel.setFont(new Font("Raleway", Font.BOLD, 15));
+		lblNivel.setBounds(10, 393, 284, 14);
+		panelIzquierda.add(lblNivel);
 
 		lblEjercicios = new JLabel("Ejercicios");
 		lblEjercicios.setFont(new Font("Raleway", Font.PLAIN, 30));
@@ -344,5 +351,12 @@ public class Workouts extends JFrame {
 
 	public void setComboBox(JComboBox<String> comboBox) {
 		this.comboBox = comboBox;
+	}
+	public JLabel getLblNivel() {
+		return lblNivel;
+	}
+
+	public void setLblNivel(JLabel lblNivel) {
+		this.lblNivel = lblNivel;
 	}
 }
